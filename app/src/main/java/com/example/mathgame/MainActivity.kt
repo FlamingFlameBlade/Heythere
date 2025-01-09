@@ -23,66 +23,72 @@ import kotlin.random.Random
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.style.TextAlign
 import com.example.mathgame.ui.theme.MathGameTheme
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.compose.runtime.*
+
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val sharedPreferences = getSharedPreferences("math_progress", Context.MODE_PRIVATE)
+
         enableEdgeToEdge()
         setContent {
             MathGameTheme{
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    MathLearningApp()
+                    MathLearningApp(sharedPreferences)
                 }
             }
         }
     }
 }
 
+
+
 @Composable
-fun MathLearningApp() {
+fun MathLearningApp(sharedPreferences: SharedPreferences) {
     var currentScreen by remember { mutableStateOf("menu") }
     var currentTopic by remember { mutableStateOf("Basic Math") }
 
-    // Store progress and levels for each topic
-    val progressState = remember { mutableStateOf(mutableMapOf<String, Float>()) }
-    val levelState = remember { mutableStateOf(mutableMapOf<String, Int>()) }
-
-    // Initialize progress and level for the current topic if not already set
-    progressState.value[currentTopic] = progressState.value[currentTopic] ?: 0f
-    levelState.value[currentTopic] = levelState.value[currentTopic] ?: 1
+    // Load the progress and level when navigating to a topic
+    val progress = remember { mutableStateOf(getProgress(sharedPreferences, currentTopic)) }
+    val level = remember { mutableStateOf(getLevel(sharedPreferences, currentTopic)) }
 
     when (currentScreen) {
         "menu" -> MainMenuScreen(
             onNavigate = { topic ->
                 currentTopic = topic
-                progressState.value[topic] = progressState.value[topic] ?: 0f
-                levelState.value[topic] = levelState.value[topic] ?: 1
+                // Reload progress and level for the selected topic
+                progress.value = getProgress(sharedPreferences, topic)
+                level.value = getLevel(sharedPreferences, topic)
                 currentScreen = "question"
             },
-            progressState = progressState.value,
-            levelState = levelState.value
+            progressState = mapOf(currentTopic to progress.value),
+            levelState = mapOf(currentTopic to level.value)
         )
         "question" -> MathQuestionScreen(
             topic = currentTopic,
-            progress = progressState.value[currentTopic] ?: 0f,
-            level = levelState.value[currentTopic] ?: 1,
+            progress = progress.value,
+            level = level.value,
             onCorrectAnswer = {
-                val currentProgress = progressState.value[currentTopic] ?: 0f
-                val newProgress = currentProgress + 0.2f
-                progressState.value = progressState.value.toMutableMap().apply {
-                    this[currentTopic] = if (newProgress >= 1f) 0f else newProgress
-                }
+                val newProgress = progress.value + 0.2f
+                // Save new progress value to SharedPreferences
+                saveProgress(sharedPreferences, currentTopic, if (newProgress >= 1f) 0f else newProgress)
+
                 if (newProgress >= 1f) {
-                    levelState.value = levelState.value.toMutableMap().apply {
-                        this[currentTopic] = (this[currentTopic] ?: 1) + 1
-                    }
+                    val newLevel = level.value + 1
+                    saveLevel(sharedPreferences, currentTopic, newLevel)
+                    level.value = newLevel
                 }
+                progress.value = if (newProgress >= 1f) 0f else newProgress
             },
             onBack = { currentScreen = "menu" }
         )
     }
 }
+
 
 @Composable
 fun MainMenuScreen(
@@ -374,15 +380,25 @@ fun MathQuestionScreen(
         }
     }
 }
+fun saveProgress(sharedPreferences: SharedPreferences, topic: String, progress: Float) {
+    sharedPreferences.edit().putFloat("progress_$topic", progress).apply()
+}
 
+fun saveLevel(sharedPreferences: SharedPreferences, topic: String, level: Int) {
+    sharedPreferences.edit().putInt("level_$topic", level).apply()
+}
+
+fun getProgress(sharedPreferences: SharedPreferences, topic: String): Float {
+    return sharedPreferences.getFloat("progress_$topic", 0f)
+}
+
+fun getLevel(sharedPreferences: SharedPreferences, topic: String): Int {
+    return sharedPreferences.getInt("level_$topic", 1)
+}
 data class Question(
     val questionText: String,
     val correctAnswer: String,
     val options: List<String>
 )
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewMathLearningApp() {
-    MathLearningApp()
-}
+
