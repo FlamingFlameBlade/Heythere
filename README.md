@@ -10,8 +10,9 @@ Math Game allows the user to test their skills in different areas of math and le
 ## Instructions
 Install Android Studios and complete the following:
 ```
-1. Download the files through the repository.
-2. Add the file to the AndroidStudioProjects folder.
-3. Open the file through Android Studios.
+1. Open Android Studios.
+2. Click get from VCS.
+3. Paste the URL of the repository.
+4. Click Clone.
 ```
   
