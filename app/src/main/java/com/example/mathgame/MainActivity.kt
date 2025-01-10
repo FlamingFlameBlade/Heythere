@@ -52,42 +52,54 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
     var currentScreen by remember { mutableStateOf("menu") }
     var currentTopic by remember { mutableStateOf("Basic Math") }
 
-    // Load the progress and level when navigating to a topic
-    val progress = remember { mutableStateOf(getProgress(sharedPreferences, currentTopic)) }
-    val level = remember { mutableStateOf(getLevel(sharedPreferences, currentTopic)) }
+    // Initialize states for all topics
+    val topics = listOf(
+        "Basic Math", "Fractions", "Geometry",
+        "Complex Division", "Complex Multiplication", "Pre Algebra"
+    )
+    val progressState = remember { mutableStateMapOf<String, Float>() }
+    val levelState = remember { mutableStateMapOf<String, Int>() }
+
+    // Load initial values for all topics
+    LaunchedEffect(Unit) {
+        topics.forEach { topic ->
+            progressState[topic] = getProgress(sharedPreferences, topic)
+            levelState[topic] = getLevel(sharedPreferences, topic)
+        }
+    }
 
     when (currentScreen) {
         "menu" -> MainMenuScreen(
             onNavigate = { topic ->
                 currentTopic = topic
-                // Reload progress and level for the selected topic
-                progress.value = getProgress(sharedPreferences, topic)
-                level.value = getLevel(sharedPreferences, topic)
                 currentScreen = "question"
             },
-            progressState = mapOf(currentTopic to progress.value),
-            levelState = mapOf(currentTopic to level.value)
+            progressState = progressState,
+            levelState = levelState
         )
         "question" -> MathQuestionScreen(
             topic = currentTopic,
-            progress = progress.value,
-            level = level.value,
+            progress = progressState[currentTopic] ?: 0f,
+            level = levelState[currentTopic] ?: 1,
             onCorrectAnswer = {
-                val newProgress = progress.value + 0.2f
-                // Save new progress value to SharedPreferences
-                saveProgress(sharedPreferences, currentTopic, if (newProgress >= 1f) 0f else newProgress)
-
+                val newProgress = (progressState[currentTopic] ?: 0f) + 0.2f
+                saveProgress(
+                    sharedPreferences,
+                    currentTopic,
+                    if (newProgress >= 1f) 0f else newProgress
+                )
                 if (newProgress >= 1f) {
-                    val newLevel = level.value + 1
+                    val newLevel = (levelState[currentTopic] ?: 1) + 1
                     saveLevel(sharedPreferences, currentTopic, newLevel)
-                    level.value = newLevel
+                    levelState[currentTopic] = newLevel
                 }
-                progress.value = if (newProgress >= 1f) 0f else newProgress
+                progressState[currentTopic] = if (newProgress >= 1f) 0f else newProgress
             },
             onBack = { currentScreen = "menu" }
         )
     }
 }
+
 
 
 @Composable
@@ -143,7 +155,7 @@ fun MainMenuScreen(
 fun TopicSquare(topic: String, progress: Float?, level: Int?, onClick: () -> Unit) {
     Card(
         modifier = Modifier
-            .height(148.dp) // Rectangular shape
+            .height(160.dp) // Rectangular shape
             .width(200.dp)
             .padding(8.dp)
             .clip(RoundedCornerShape(12.dp))
