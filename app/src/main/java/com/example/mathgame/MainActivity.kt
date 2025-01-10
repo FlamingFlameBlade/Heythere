@@ -155,9 +155,9 @@ fun MainMenuScreen(
 fun TopicSquare(topic: String, progress: Float?, level: Int?, onClick: () -> Unit) {
     Card(
         modifier = Modifier
-            .height(160.dp) // Rectangular shape
+            .height(172.dp) // Rectangular shape
             .width(200.dp)
-            .padding(8.dp)
+            .padding(10.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp),
