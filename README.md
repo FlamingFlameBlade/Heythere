@@ -15,7 +15,3 @@ Install Android Studios and complete the following:
 3. Open the file through Android Studios.
 ```
   
-## Setup Instructions
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/FlamingFlameBlade/Heythere.git
