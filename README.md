@@ -8,7 +8,8 @@ Math Game allows the user to test their skills in different areas of math and le
 - Multiple math areas to choose from
 
 ## Instructions
-Install Android Studios and complete the following:
+Install Android Studios (https://developer.android.com/studio) and Git (https://git-scm.com/downloads)
+and complete the following:
 ```
 1. Open Android Studios.
 2. Click get from VCS.
