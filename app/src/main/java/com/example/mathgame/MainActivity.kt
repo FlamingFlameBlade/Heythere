@@ -274,7 +274,7 @@ fun MathQuestionScreen(
             showFeedback = "Correct!"
             onCorrectAnswer()
         } else {
-            showFeedback = "Incorrect. Try again!"
+            showFeedback = "Incorrect."
         }
 
         // Disable answering and start delay for next question
