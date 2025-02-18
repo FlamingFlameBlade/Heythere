@@ -48,7 +48,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
+val topics = listOf("Addition", "Subtraction","Multiplication","Division", "Fractions", "Geometry",
+    "Complex Division", "Complex Multiplication", "Pre Algebra")
 
 @Composable
 fun MathLearningApp(sharedPreferences: SharedPreferences) {
@@ -56,10 +57,6 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
     var currentTopic by remember { mutableStateOf("Basic Math") }
 
     // Initialize states for all topics
-    val topics = listOf(
-        "Basic Math", "Fractions", "Geometry",
-        "Complex Division", "Complex Multiplication", "Pre Algebra"
-    )
     val progressState = remember { mutableStateMapOf<String, Float>() }
     val levelState = remember { mutableStateMapOf<String, Int>() }
 
@@ -111,14 +108,6 @@ fun MainMenuScreen(
     progressState: Map<String, Float>,
     levelState: Map<String, Int>
 ) {
-    val topics = listOf(
-        "Basic Math",
-        "Fractions",
-        "Geometry",
-        "Complex Division",
-        "Complex Multiplication",
-        "Pre Algebra"
-    )
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
