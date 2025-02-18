@@ -1,32 +1,65 @@
 package com.example.mathgame
 
+
+
 object QuestionsRepository {
 
-    private val basicMathQuestions = listOf(
-        Question("What is 5 + 3?", "8", listOf("6", "7", "8", "9")),
-        Question("What is 10 - 4?", "6", listOf("5", "6", "7", "8")),
-        Question("What is 7 x 2?", "14", listOf("12", "13", "14", "15")),
-        Question("What is 12 ÷ 4?", "3", listOf("2", "3", "4", "5")),
-        Question("What is 13 - 6?", "7", listOf("7", "6", "19", "8")),
-        Question("What is 20 ÷ 5?", "4", listOf("2", "3", "4", "5")),
-        Question("What is 15 + 9?", "24", listOf("22", "23", "24", "25")),
-        Question("What is 30 - 18?", "12", listOf("10", "11", "12", "13")),
-        Question("What is 9 x 3?", "27", listOf("24", "25", "26", "27")),
-        Question("What is 36 ÷ 6?", "6", listOf("4", "5", "6", "7"))
-    ) + (1..40).map {
-        val num1 = (1..50).random()
-        val num2 = (1..50).random()
-        val operators = listOf("+", "-", "x", "÷")
-        val operator = operators.random()
-        val answer = when (operator) {
-            "+" -> num1 + num2
-            "-" -> num1 - num2
-            "x" -> num1 * num2
-            "÷" -> if (num2 != 0) num1 / num2 else 1
-            else -> 0
+    // Generate addition questions (Numbers 1-50)
+    private fun generateAdditionQuestions(count: Int): List<Question> {
+        return (1..count).map {
+            val num1 = (1..50).random()
+            val num2 = (1..50).random()
+            val answer = num1 + num2
+            Question(
+                "What is $num1 + $num2?",
+                correctAnswer = answer.toString(), listOf(answer, answer - 1, answer + 1, answer + 2).map { it.toString() }.shuffled()
+            )
         }
-        Question("What is $num1 $operator $num2?", answer.toString(), listOf((answer - 1).toString(), (answer + 1).toString(), answer.toString(), (answer + 2).toString()))
     }
+
+    // Generate subtraction questions (Numbers 1-50, ensure non-negative results)
+    private fun generateSubtractionQuestions(count: Int): List<Question> {
+        return (1..count).map {
+            val num1 = (1..50).random()
+            val num2 = (1..num1).random() // Ensure num1 is larger
+            val answer = num1 - num2
+            Question(
+                "What is $num1 - $num2?",
+                correctAnswer = answer.toString(),
+                listOf(answer, answer - 1, answer + 1, answer + 2).map { it.toString() }.shuffled()
+            )
+        }
+    }
+
+    // Generate multiplication questions (Smaller numbers 1-12)
+    private fun generateMultiplicationQuestions(count: Int): List<Question> {
+        return (1..count).map {
+            val num1 = (1..12).random()
+            val num2 = (1..12).random()
+            val answer = num1 * num2
+            Question("What is $num1 × $num2?",
+                correctAnswer = answer.toString(), listOf(answer, answer - 1, answer + 1, answer + 2).map { it.toString() }.shuffled()
+            )
+        }
+    }
+
+    // Generate division questions (Dividends up to 100, divisors 1-10, clean division)
+    private fun generateDivisionQuestions(count: Int): List<Question> {
+        return (1..count).map {
+            val divisor = (1..10).random()
+            val quotient = (1..10).random()
+            val dividend = divisor * quotient // Ensures a clean division
+            Question("What is $dividend ÷ $divisor?",
+                correctAnswer = quotient.toString(), listOf(quotient, quotient - 1, quotient + 1, quotient + 2).map { it.toString() }.shuffled()
+            )
+        }
+    }
+
+    // Store questions separately
+    private val additionQuestions = generateAdditionQuestions(50)
+    private val subtractionQuestions = generateSubtractionQuestions(50)
+    private val multiplicationQuestions = generateMultiplicationQuestions(50)
+    private val divisionQuestions = generateDivisionQuestions(50)
 
     private val fractionsQuestions = listOf(
         Question("What is 1/2 + 1/4?", "3/4", listOf("1/2", "3/4", "2/3", "5/4"))
@@ -71,13 +104,16 @@ object QuestionsRepository {
         val x = (1..20).random()
         val multiplier = (2..5).random()
         val constant = (1..10).random()
-        val equation = "$multiplier x + $constant = ${multiplier * x + constant}"
+        val equation = ""+multiplier + "x + " + constant + " = " + (multiplier * x + constant)
         Question("Solve for x: $equation", x.toString(), listOf((x - 1).toString(), x.toString(), (x + 1).toString(), (x + 2).toString()))
     }
 
     fun getQuestionsForTopic(topic: String): List<Question> {
         return when (topic) {
-            "Basic Math" -> basicMathQuestions
+            "Addition" -> additionQuestions
+            "Subtraction" -> subtractionQuestions
+            "Multiplication" -> multiplicationQuestions
+            "Division" -> divisionQuestions
             "Fractions" -> fractionsQuestions
             "Geometry" -> geometryQuestions
             "Complex Division" -> complexDivisionQuestions
