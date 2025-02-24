@@ -27,6 +27,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
+import androidx.compose.foundation.background
 import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
 
@@ -60,6 +61,9 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
     val progressState = remember { mutableStateMapOf<String, Float>() }
     val levelState = remember { mutableStateMapOf<String, Int>() }
 
+    // Track total correct answers
+    var totalCorrectAnswers by rememberSaveable { mutableStateOf(getTotalCorrectAnswers(sharedPreferences)) }
+
     // Load initial values for all topics
     LaunchedEffect(Unit) {
         topics.forEach { topic ->
@@ -75,19 +79,19 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
                 currentScreen = "question"
             },
             progressState = progressState,
-            levelState = levelState
+            levelState = levelState,
+            onAchievements = { currentScreen = "achievements" }
         )
         "question" -> MathQuestionScreen(
             topic = currentTopic,
             progress = progressState[currentTopic] ?: 0f,
             level = levelState[currentTopic] ?: 1,
             onCorrectAnswer = {
+                totalCorrectAnswers += 1
+                saveTotalCorrectAnswers(sharedPreferences, totalCorrectAnswers) // Save the updated count
+
                 val newProgress = (progressState[currentTopic] ?: 0f) + 0.2f
-                saveProgress(
-                    sharedPreferences,
-                    currentTopic,
-                    if (newProgress >= 1f) 0f else newProgress
-                )
+                saveProgress(sharedPreferences, currentTopic, if (newProgress >= 1f) 0f else newProgress)
                 if (newProgress >= 1f) {
                     val newLevel = (levelState[currentTopic] ?: 1) + 1
                     saveLevel(sharedPreferences, currentTopic, newLevel)
@@ -97,6 +101,7 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
             },
             onBack = { currentScreen = "menu" }
         )
+        "achievements" -> AchievementsScreen(totalCorrectAnswers, {currentScreen = "menu"})
     }
 }
 
@@ -105,10 +110,10 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
 @Composable
 fun MainMenuScreen(
     onNavigate: (String) -> Unit,
+    onAchievements: () -> Unit, // New parameter for Achievements navigation
     progressState: Map<String, Float>,
     levelState: Map<String, Int>
 ) {
-
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -120,15 +125,24 @@ fun MainMenuScreen(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .padding(top = 48.dp)
+                modifier = Modifier.padding(bottom = 16.dp, top = 48.dp)
             )
         }
+
+        // Achievements Button
+        item {
+            Button(
+                onClick = onAchievements,
+                modifier = Modifier.padding(10.dp)
+            ) {
+                Text(text = "Achievements", fontSize = 18.sp)
+            }
+        }
+
         items(topics.chunked(2)) { rowTopics ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center // This centers the row's content
+                horizontalArrangement = Arrangement.Center
             ) {
                 rowTopics.forEach { topic ->
                     TopicSquare(
@@ -339,6 +353,107 @@ fun MathQuestionScreen(
         }
     }
 }
+@Composable
+fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
+    val achievements = listOf(
+        Achievement(10, "Beginner", "Answer 10 questions correctly"),
+        Achievement(50, "Apprentice", "Answer 50 questions correctly"),
+        Achievement(100, "Scholar", "Answer 100 questions correctly"),
+        Achievement(250, "Expert", "Answer 250 questions correctly"),
+        Achievement(500, "Master", "Answer 500 questions correctly")
+    )
+    TextButton(onClick = onBack) {
+        Text(text = "Back", color = Color.Gray, modifier = Modifier.padding(top = 8.dp))
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(30.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Title
+        Text(
+            text = "Achievements",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
+        )
+
+        // Total correct answers
+        Text(
+            text = "Total Correct Answers: $totalCorrectAnswers",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Blue
+        )
+
+        // Achievements Grid
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(achievements.chunked(3)) { rowAchievements ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    rowAchievements.forEach { achievement ->
+                        AchievementTile(achievement, totalCorrectAnswers)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Achievement data class
+@Composable
+fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int) {
+    val unlocked = totalCorrectAnswers >= achievement.milestone
+    val backgroundColor = if (unlocked) Color(0xFFE3F2FD) else Color.Gray.copy(alpha = 0.4f)
+
+    Column(
+        modifier = Modifier.width(110.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Achievement Box
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(backgroundColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = if (unlocked) "🏆" else "🔒",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (unlocked) Color.Black else Color.DarkGray
+            )
+        }
+
+        // Title
+        Text(
+            text = achievement.title,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+
+        // Description
+        Text(
+            text = achievement.description,
+            fontSize = 12.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            lineHeight = 15.sp
+        )
+    }
+}
+
 
 fun saveProgress(sharedPreferences: SharedPreferences, topic: String, progress: Float) {
     sharedPreferences.edit().putFloat("progress_$topic", progress).apply()
@@ -355,10 +470,21 @@ fun getProgress(sharedPreferences: SharedPreferences, topic: String): Float {
 fun getLevel(sharedPreferences: SharedPreferences, topic: String): Int {
     return sharedPreferences.getInt("level_$topic", 1)
 }
+fun saveTotalCorrectAnswers(sharedPreferences: SharedPreferences, count: Int) {
+    sharedPreferences.edit().putInt("total_correct_answers", count).apply()
+}
+
+fun getTotalCorrectAnswers(sharedPreferences: SharedPreferences): Int {
+    return sharedPreferences.getInt("total_correct_answers", 0)
+}
 data class Question(
     val questionText: String,
     val correctAnswer: String,
     val options: List<String>
 )
+data class Achievement(
+    val milestone: Int,
+    val title: String,
+    val description: String)
 
 
