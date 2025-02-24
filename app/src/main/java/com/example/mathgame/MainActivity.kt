@@ -31,6 +31,7 @@ import androidx.compose.foundation.background
 import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
 
+//FlamingFlameBlade
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -71,7 +72,7 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
             levelState[topic] = getLevel(sharedPreferences, topic)
         }
     }
-
+//FlamingFlameBlade
     when (currentScreen) {
         "menu" -> MainMenuScreen(
             onNavigate = { topic ->
@@ -233,7 +234,7 @@ fun TopicSquare(topic: String, progress: Float?, level: Int?, onClick: () -> Uni
     }
 }
 
-
+//FlamingFlameBlade
 @Composable
 fun MathQuestionScreen(
     topic: String,
@@ -244,7 +245,7 @@ fun MathQuestionScreen(
 ) {
     var showFeedback by remember { mutableStateOf<String?>(null) } // Feedback message
     var isAnsweringEnabled by remember { mutableStateOf(true) } // Enable/disable answering during delay
-
+//FlamingFlameBlade
     // Get questions from repository
     val questions = QuestionsRepository.getQuestionsForTopic(topic)
 
@@ -268,7 +269,7 @@ fun MathQuestionScreen(
             showFeedback = null
         }, 1000)
     }
-
+//FlamingFlameBlade
     // Handle answer selection
     fun handleAnswer(answer: String) {
         if (!isAnsweringEnabled) return // Disable answering during delay
@@ -302,7 +303,7 @@ fun MathQuestionScreen(
             }
             Text(text = "Level $level", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
-
+//FlamingFlameBlade
         LinearProgressIndicator(
             progress = progress,
             modifier = Modifier
@@ -331,7 +332,7 @@ fun MathQuestionScreen(
                 modifier = Modifier.padding(8.dp)
             )
         }
-
+//FlamingFlameBlade
         // Answer Options
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -387,7 +388,7 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
             fontWeight = FontWeight.Medium,
             color = Color.Blue
         )
-
+//FlamingFlameBlade
         // Achievements Grid
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -412,7 +413,7 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
 fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int) {
     val unlocked = totalCorrectAnswers >= achievement.milestone
     val backgroundColor = if (unlocked) Color(0xFFE3F2FD) else Color.Gray.copy(alpha = 0.4f)
-
+//FlamingFlameBlade
     Column(
         modifier = Modifier.width(110.dp),
         horizontalAlignment = Alignment.CenterHorizontally
