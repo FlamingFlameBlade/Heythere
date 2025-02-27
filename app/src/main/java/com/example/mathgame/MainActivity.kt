@@ -99,7 +99,12 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
                 }
                 progressState[currentTopic] = if (newProgress >= 1f) 0f else newProgress
             },
-            onBack = { currentScreen = "menu" }
+            onBack = { currentScreen = "menu" },
+            onIncorrectAnswer = {
+                val newProgress = (progressState[currentTopic] ?: 0f) - 0.2f
+                saveProgress(sharedPreferences, currentTopic, if (newProgress <= -0.2f) 0f else newProgress)
+                progressState[currentTopic] =  if (newProgress <= -0.2f) 0f else newProgress
+            }
         )
         "achievements" -> AchievementsScreen(totalCorrectAnswers, {currentScreen = "menu"})
     }
@@ -240,7 +245,8 @@ fun MathQuestionScreen(
     progress: Float,
     level: Int,
     onCorrectAnswer: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onIncorrectAnswer: () -> Unit
 ) {
     var showFeedback by remember { mutableStateOf<String?>(null) } // Feedback message
     var isAnsweringEnabled by remember { mutableStateOf(true) } // Enable/disable answering during delay
@@ -278,6 +284,7 @@ fun MathQuestionScreen(
             onCorrectAnswer()
         } else {
             showFeedback = "Incorrect."
+            onIncorrectAnswer()
         }
 
         // Disable answering and start delay for next question
