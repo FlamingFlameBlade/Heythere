@@ -91,16 +91,25 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
                 totalCorrectAnswers += 1
                 saveTotalCorrectAnswers(sharedPreferences, totalCorrectAnswers) // Save the updated count
 
-                val newProgress = (progressState[currentTopic] ?: 0f) + 0.2f
-                saveProgress(sharedPreferences, currentTopic, if (newProgress >= 1f) 0f else newProgress)
+                val level = levelState[currentTopic] ?: 1
+                val multiplier = 1f / level
+                val newProgress = (progressState[currentTopic] ?: 0f) + (multiplier * 0.5f)
+
                 if (newProgress >= 1f) {
-                    val newLevel = (levelState[currentTopic] ?: 1) + 1
+                    // Level up
+                    val newLevel = level + 1
                     saveLevel(sharedPreferences, currentTopic, newLevel)
                     levelState[currentTopic] = newLevel
+                    progressState[currentTopic] = 0f
+                    saveProgress(sharedPreferences, currentTopic, 0f) // Reset progress
+                } else {
+                    // Update progress without leveling up
+                    progressState[currentTopic] = newProgress
+                    saveProgress(sharedPreferences, currentTopic, newProgress)
                 }
-                progressState[currentTopic] = if (newProgress >= 1f) 0f else newProgress
             },
-            onBack = { currentScreen = "menu" },
+
+                    onBack = { currentScreen = "menu" },
             onIncorrectAnswer = {
                 val newProgress = (progressState[currentTopic] ?: 0f) - 0.2f
                 saveProgress(sharedPreferences, currentTopic, if (newProgress <= -0.2f) 0f else newProgress)
