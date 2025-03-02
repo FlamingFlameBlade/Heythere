@@ -27,8 +27,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.runtime.*
+import androidx.compose.ui.draw.scale
 import kotlinx.coroutines.delay
 
 //FlamingFlameBlade
@@ -100,6 +105,7 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
                     val newLevel = level + 1
                     saveLevel(sharedPreferences, currentTopic, newLevel)
                     levelState[currentTopic] = newLevel
+                    progressState[currentTopic] = 0.9999f
                     progressState[currentTopic] = 0f
                     saveProgress(sharedPreferences, currentTopic, 0f) // Reset progress
                 } else {
@@ -317,11 +323,13 @@ fun MathQuestionScreen(
             TextButton(onClick = onBack) {
                 Text(text = "Back", color = Color.Gray)
             }
-            Text(text = "Level $level", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            LevelIndicator(level)
         }
 //FlamingFlameBlade
+        val animatedProgress by animateFloatAsState(targetValue = progress)
+
         LinearProgressIndicator(
-            progress = progress,
+            progress = animatedProgress,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)
@@ -369,6 +377,35 @@ fun MathQuestionScreen(
             }
         }
     }
+}
+@Composable
+fun LevelIndicator(level: Int) {
+    var isLevelUp by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isLevelUp) 1.2f else 1f, // Scale up slightly on level up
+        animationSpec = tween(
+            durationMillis = 1000, // Animation duration
+            easing = FastOutSlowInEasing
+        ),
+        finishedListener = { isLevelUp = false } // Reset scale after animation
+    )
+
+    val color by animateColorAsState(
+        targetValue = if (isLevelUp) Color(0xFFFFD700) else Color.Black, // Gold color on level-up
+        animationSpec = tween(durationMillis = 800) // Same duration as scale animation
+    )
+
+    LaunchedEffect(level) {
+        isLevelUp = true // Trigger animations when the level changes
+    }
+
+    Text(
+        text = "Level $level",
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        color = color, // Apply animated color
+        modifier = Modifier.scale(scale) // Apply scaling animation
+    )
 }
 @Composable
 fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
