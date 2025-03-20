@@ -1,9 +1,18 @@
 package com.example.mathgame
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,30 +20,29 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
-import kotlin.random.Random
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.text.style.TextAlign
+import com.example.mathgame.ui.theme.Bronze
+import com.example.mathgame.ui.theme.Gold
+import com.example.mathgame.ui.theme.Iron
+import com.example.mathgame.ui.theme.Ivory
+import com.example.mathgame.ui.theme.LightBlue
+import com.example.mathgame.ui.theme.LightGray
+import com.example.mathgame.ui.theme.LightYellow
 import com.example.mathgame.ui.theme.MathGameTheme
-import android.content.Context
-import android.content.SharedPreferences
-import android.os.Handler
-import android.os.Looper
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.runtime.*
-import androidx.compose.ui.draw.scale
-import kotlinx.coroutines.delay
+import com.example.mathgame.ui.theme.Ruby
+import com.example.mathgame.ui.theme.Silver
+import com.example.mathgame.ui.theme.Steel
+import com.example.mathgame.ui.theme.Yellow
+import kotlin.random.Random
 
 //FlamingFlameBlade
 
@@ -55,7 +63,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-val topics = listOf("Addition", "Subtraction","Multiplication","Division", "Fractions", "Geometry",
+val topics = listOf("Addition", "Subtraction","Multiplication","Division", "Fraction Addition","Fraction Subtraction","Fraction Multiplication",
     "Complex Division", "Complex Multiplication", "Pre Algebra")
 
 @Composable
@@ -145,7 +153,7 @@ fun MainMenuScreen(
                 text = "Choose a Math Topic",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 16.dp, top = 48.dp)
             )
         }
@@ -180,6 +188,22 @@ fun MainMenuScreen(
 
 @Composable
 fun TopicSquare(topic: String, progress: Float?, level: Int?, onClick: () -> Unit) {
+    var tileColor = Iron
+    var progressForeground = Steel
+    var progressBackground = Ivory
+    if (level != null && level > 7){
+        tileColor = Gold
+    }
+    else if (level != null && level > 5) {
+        tileColor = Silver
+        progressForeground = LightBlue
+    }
+    else if (level != null && level > 3) {
+        tileColor = Bronze
+        progressBackground = LightYellow
+        progressForeground = Yellow
+    }
+
     Card(
         modifier = Modifier
             .height(172.dp) // Rectangular shape
@@ -188,7 +212,7 @@ fun TopicSquare(topic: String, progress: Float?, level: Int?, onClick: () -> Uni
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+        colors = CardDefaults.cardColors(containerColor = tileColor),
     ) {
         Box(
             modifier = Modifier
@@ -206,7 +230,7 @@ fun TopicSquare(topic: String, progress: Float?, level: Int?, onClick: () -> Uni
                         text = topic,
                         fontSize = 20.sp, // Increased font size for better fit
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = progressForeground,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(bottom = 8.dp),
                     )
@@ -219,7 +243,7 @@ fun TopicSquare(topic: String, progress: Float?, level: Int?, onClick: () -> Uni
                         CircularProgressIndicator(
                             progress = 1f, // Full circle
                             modifier = Modifier.fillMaxSize(),
-                            color = Color(0xFFDCEEEE), // Background color
+                            color = progressBackground, // Background color
                             strokeWidth = 8.dp
                         )
 
@@ -227,7 +251,7 @@ fun TopicSquare(topic: String, progress: Float?, level: Int?, onClick: () -> Uni
                         CircularProgressIndicator(
                             progress = progress ?: 0f,
                             modifier = Modifier.fillMaxSize(),
-                            color = Color(0xFF57E8DD), // Foreground color
+                            color = progressForeground, // Foreground color
                             strokeWidth = 8.dp
                         )
 
@@ -317,7 +341,9 @@ fun MathQuestionScreen(
     ) {
         // Level and Progress Bar
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextButton(onClick = onBack) {
@@ -391,7 +417,7 @@ fun LevelIndicator(level: Int) {
     )
 
     val color by animateColorAsState(
-        targetValue = if (isLevelUp) Color(0xFFFFD700) else Color.Black, // Gold color on level-up
+        targetValue = if (isLevelUp) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary, // Gold color on level-up
         animationSpec = tween(durationMillis = 800) // Same duration as scale animation
     )
 
@@ -417,7 +443,7 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
         Achievement(500, "Master", "Answer 500 questions correctly")
     )
     TextButton(onClick = onBack) {
-        Text(text = "Back", color = Color.Gray, modifier = Modifier.padding(top = 8.dp))
+        Text(text = "Back", color = Color.Gray, modifier = Modifier.padding(top = 32.dp))
     }
     Column(
         modifier = Modifier
@@ -431,7 +457,8 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
             text = "Achievements",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(top = 24.dp)
         )
 
         // Total correct answers
@@ -439,7 +466,7 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
             text = "Total Correct Answers: $totalCorrectAnswers",
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.Blue
+            color = MaterialTheme.colorScheme.secondary
         )
 //FlamingFlameBlade
         // Achievements Grid
@@ -465,7 +492,20 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
 @Composable
 fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int) {
     val unlocked = totalCorrectAnswers >= achievement.milestone
-    val backgroundColor = if (unlocked) Color(0xFFE3F2FD) else Color.Gray.copy(alpha = 0.4f)
+    val backgroundColor =
+        if (unlocked)
+            if (achievement.title == "Beginner")
+                Bronze
+            else if (achievement.title == "Apprentice")
+                Silver
+            else if (achievement.title == "Scholar")
+                Gold
+            else if (achievement.title == "Expert")
+                Ruby
+            else
+                LightGray
+        else
+            Color.Gray.copy(alpha = 0.4f)
 //FlamingFlameBlade
     Column(
         modifier = Modifier.width(110.dp),
@@ -492,7 +532,7 @@ fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int) {
             text = achievement.title,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.tertiary,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp)
         )

@@ -1,121 +1,591 @@
 package com.example.mathgame
 
-
-
 object QuestionsRepository {
 
-    // Generate addition questions (Numbers 1-50)
-    private fun generateAdditionQuestions(count: Int): List<Question> {
-        return (1..count).map {
-            val num1 = (1..50).random()
-            val num2 = (1..50).random()
-            val answer = num1 + num2
-            Question(
-                "What is $num1 + $num2?",
-                correctAnswer = answer.toString(), listOf(answer, answer - 1, answer + 1, answer + 2).map { it.toString() }.shuffled()
-            )
-        }
-    }
+    // Predefined questions for each topic
+    val additionQuestions = listOf(
+        Question("What is 2 + 3?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 1 + 4?", "5", listOf("3", "4", "5", "6").shuffled()),
+        Question("What is 6 + 2?", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 3 + 5?", "8", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 7 + 3?", "10", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 4 + 6?", "10", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 8 + 1?", "9", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 5 + 5?", "10", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 9 + 3?", "12", listOf("10", "11", "12", "13").shuffled()),
+        Question("What is 6 + 7?", "13", listOf("11", "12", "13", "14").shuffled()),
+        Question("What is 11 + 2?", "13", listOf("11", "12", "13", "14").shuffled()),
+        Question("What is 15 + 4?", "19", listOf("17", "18", "19", "20").shuffled()),
+        Question("What is 18 + 2?", "20", listOf("18", "19", "20", "21").shuffled()),
+        Question("What is 9 + 6?", "15", listOf("13", "14", "15", "16").shuffled()),
+        Question("What is 12 + 8?", "20", listOf("18", "19", "20", "21").shuffled()),
+        Question("What is 14 + 9?", "23", listOf("21", "22", "23", "24").shuffled()),
+        Question("What is 7 + 14?", "21", listOf("19", "20", "21", "22").shuffled()),
+        Question("What is 13 + 11?", "24", listOf("22", "23", "24", "25").shuffled()),
+        Question("What is 20 + 5?", "25", listOf("23", "24", "25", "26").shuffled()),
+        Question("What is 17 + 3?", "20", listOf("18", "19", "20", "21").shuffled()),
+        Question("What is 22 + 8?", "30", listOf("28", "29", "30", "31").shuffled()),
+        Question("What is 10 + 12?", "22", listOf("20", "21", "22", "23").shuffled()),
+        Question("What is 19 + 6?", "25", listOf("23", "24", "25", "26").shuffled()),
+        Question("What is 24 + 5?", "29", listOf("27", "28", "29", "30").shuffled()),
+        Question("What is 27 + 9?", "36", listOf("34", "35", "36", "37").shuffled()),
+        Question("What is 30 + 11?", "41", listOf("39", "40", "41", "42").shuffled()),
+        Question("What is 28 + 6?", "34", listOf("32", "33", "34", "35").shuffled()),
+        Question("What is 35 + 7?", "42", listOf("40", "41", "42", "43").shuffled()),
+        Question("What is 40 + 9?", "49", listOf("47", "48", "49", "50").shuffled()),
+        Question("What is 50 + 3?", "53", listOf("51", "52", "53", "54").shuffled()),
+        Question("What is 12 + 13?", "25", listOf("23", "24", "25", "26").shuffled()),
+        Question("What is 9 + 9?", "18", listOf("16", "17", "18", "19").shuffled()),
+        Question("What is 6 + 6?", "12", listOf("10", "11", "12", "13").shuffled()),
+        Question("What is 4 + 4?", "8", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 7 + 7?", "14", listOf("12", "13", "14", "15").shuffled()),
+        Question("What is 8 + 5?", "13", listOf("11", "12", "13", "14").shuffled()),
+        Question("What is 15 + 2?", "17", listOf("15", "16", "17", "18").shuffled()),
+        Question("What is 20 + 4?", "24", listOf("22", "23", "24", "25").shuffled()),
+        Question("What is 17 + 8?", "25", listOf("23", "24", "25", "26").shuffled()),
+        Question("What is 30 + 5?", "35", listOf("33", "34", "35", "36").shuffled()),
+        Question("What is 33 + 9?", "42", listOf("40", "41", "42", "43").shuffled()),
+        Question("What is 42 + 6?", "48", listOf("46", "47", "48", "49").shuffled()),
+        Question("What is 49 + 5?", "54", listOf("52", "53", "54", "55").shuffled()),
+        Question("What is 21 + 14?", "35", listOf("33", "34", "35", "36").shuffled()),
+        Question("What is 18 + 17?", "35", listOf("33", "34", "35", "36").shuffled()),
+        Question("What is 11 + 9?", "20", listOf("18", "19", "20", "21").shuffled()),
+        Question("What is 16 + 13?", "29", listOf("27", "28", "29", "30").shuffled()),
+        Question("What is 19 + 15?", "34", listOf("32", "33", "34", "35").shuffled()),
+        Question("What is 10 + 7?", "17", listOf("15", "16", "17", "18").shuffled())
+    )
 
-    // Generate subtraction questions (Numbers 1-50, ensure non-negative results)
-    private fun generateSubtractionQuestions(count: Int): List<Question> {
-        return (1..count).map {
-            val num1 = (1..50).random()
-            val num2 = (1..num1).random() // Ensure num1 is larger
-            val answer = num1 - num2
-            Question(
-                "What is $num1 - $num2?",
-                correctAnswer = answer.toString(),
-                listOf(answer, answer - 1, answer + 1, answer + 2).map { it.toString() }.shuffled()
-            )
-        }
-    }
+    val subtractionQuestions = listOf(
+        Question("What is 5 - 2?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 10 - 4?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 9 - 3?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 8 - 5?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 7 - 4?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 6 - 2?", "4", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 15 - 8?", "7", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 12 - 9?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 20 - 5?", "15", listOf("14", "15", "16", "17").shuffled()),
+        Question("What is 25 - 10?", "15", listOf("14", "15", "16", "17").shuffled()),
+        Question("What is 30 - 12?", "18", listOf("16", "17", "18", "19").shuffled()),
+        Question("What is 40 - 15?", "25", listOf("23", "24", "25", "26").shuffled()),
+        Question("What is 50 - 20?", "30", listOf("28", "29", "30", "31").shuffled()),
+        Question("What is 60 - 30?", "30", listOf("28", "29", "30", "31").shuffled()),
+        Question("What is 75 - 25?", "50", listOf("48", "49", "50", "51").shuffled()),
+        Question("What is 90 - 40?", "50", listOf("48", "49", "50", "51").shuffled()),
+        Question("What is 100 - 50?", "50", listOf("48", "49", "50", "51").shuffled()),
+        Question("What is 14 - 7?", "7", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 17 - 9?", "8", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 19 - 11?", "8", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 21 - 14?", "7", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 33 - 22?", "11", listOf("9", "10", "11", "12").shuffled()),
+        Question("What is 45 - 18?", "27", listOf("25", "26", "27", "28").shuffled()),
+        Question("What is 54 - 21?", "33", listOf("31", "32", "33", "34").shuffled()),
+        Question("What is 63 - 36?", "27", listOf("25", "26", "27", "28").shuffled()),
+        Question("What is 72 - 48?", "24", listOf("22", "23", "24", "25").shuffled()),
+        Question("What is 81 - 55?", "26", listOf("24", "25", "26", "27").shuffled()),
+        Question("What is 99 - 77?", "22", listOf("20", "21", "22", "23").shuffled()),
+        Question("What is 88 - 44?", "44", listOf("42", "43", "44", "45").shuffled()),
+        Question("What is 100 - 60?", "40", listOf("38", "39", "40", "41").shuffled()),
+        Question("What is 47 - 19?", "28", listOf("26", "27", "28", "29").shuffled()),
+        Question("What is 58 - 29?", "29", listOf("27", "28", "29", "30").shuffled()),
+        Question("What is 39 - 13?", "26", listOf("24", "25", "26", "27").shuffled()),
+        Question("What is 65 - 32?", "33", listOf("31", "32", "33", "34").shuffled()),
+        Question("What is 79 - 40?", "39", listOf("37", "38", "39", "40").shuffled()),
+        Question("What is 83 - 29?", "54", listOf("52", "53", "54", "55").shuffled()),
+        Question("What is 91 - 50?", "41", listOf("39", "40", "41", "42").shuffled()),
+        Question("What is 100 - 90?", "10", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 27 - 19?", "8", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 14 - 6?", "8", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 19 - 8?", "11", listOf("9", "10", "11", "12").shuffled()),
+        Question("What is 22 - 7?", "15", listOf("13", "14", "15", "16").shuffled()),
+        Question("What is 30 - 18?", "12", listOf("10", "11", "12", "13").shuffled()),
+        Question("What is 46 - 23?", "23", listOf("21", "22", "23", "24").shuffled()),
+        Question("What is 67 - 38?", "29", listOf("27", "28", "29", "30").shuffled()),
+        Question("What is 81 - 59?", "22", listOf("20", "21", "22", "23").shuffled()),
+        Question("What is 97 - 43?", "54", listOf("52", "53", "54", "55").shuffled()),
+        Question("What is 55 - 19?", "36", listOf("34", "35", "36", "37").shuffled())
+    )
 
-    // Generate multiplication questions (Smaller numbers 1-12)
-    private fun generateMultiplicationQuestions(count: Int): List<Question> {
-        return (1..count).map {
-            val num1 = (1..12).random()
-            val num2 = (1..12).random()
-            val answer = num1 * num2
-            Question("What is $num1 × $num2?",
-                correctAnswer = answer.toString(), listOf(answer, answer - 1, answer + 1, answer + 2).map { it.toString() }.shuffled()
-            )
-        }
-    }
+    val multiplicationQuestions = listOf(
+        Question("What is 1 × 1?", "1", listOf("0", "1", "2", "3").shuffled()),
+        Question("What is 1 × 2?", "2", listOf("1", "2", "3", "4").shuffled()),
+        Question("What is 1 × 3?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 1 × 4?", "4", listOf("3", "4", "5", "6").shuffled()),
+        Question("What is 1 × 5?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 1 × 6?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 1 × 7?", "7", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 1 × 8?", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 1 × 9?", "9", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 1 × 10?", "10", listOf("9", "10", "11", "12").shuffled()),
+        Question("What is 1 × 11?", "11", listOf("10", "11", "12", "13").shuffled()),
+        Question("What is 1 × 12?", "12", listOf("11", "12", "13", "14").shuffled()),
+        Question("What is 2 × 2?", "4", listOf("3", "4", "5", "6").shuffled()),
+        Question("What is 2 × 3?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 2 × 4?", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 2 × 5?", "10", listOf("9", "10", "11", "12").shuffled()),
+        Question("What is 2 × 6?", "12", listOf("11", "12", "13", "14").shuffled()),
+        Question("What is 2 × 7?", "14", listOf("13", "14", "15", "16").shuffled()),
+        Question("What is 2 × 8?", "16", listOf("15", "16", "17", "18").shuffled()),
+        Question("What is 2 × 9?", "18", listOf("17", "18", "19", "20").shuffled()),
+        Question("What is 2 × 10?", "20", listOf("19", "20", "21", "22").shuffled()),
+        Question("What is 2 × 11?", "22", listOf("21", "22", "23", "24").shuffled()),
+        Question("What is 2 × 12?", "24", listOf("23", "24", "25", "26").shuffled()),
+        Question("What is 3 × 3?", "9", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 3 × 4?", "12", listOf("11", "12", "13", "14").shuffled()),
+        Question("What is 3 × 5?", "15", listOf("14", "15", "16", "17").shuffled()),
+        Question("What is 3 × 6?", "18", listOf("17", "18", "19", "20").shuffled()),
+        Question("What is 3 × 7?", "21", listOf("20", "21", "22", "23").shuffled()),
+        Question("What is 3 × 8?", "24", listOf("23", "24", "25", "26").shuffled()),
+        Question("What is 3 × 9?", "27", listOf("26", "27", "28", "29").shuffled()),
+        Question("What is 3 × 10?", "30", listOf("29", "30", "31", "32").shuffled()),
+        Question("What is 3 × 11?", "33", listOf("32", "33", "34", "35").shuffled()),
+        Question("What is 3 × 12?", "36", listOf("35", "36", "37", "38").shuffled()),
+        Question("What is 4 × 4?", "16", listOf("15", "16", "17", "18").shuffled()),
+        Question("What is 4 × 5?", "20", listOf("19", "20", "21", "22").shuffled()),
+        Question("What is 4 × 6?", "24", listOf("23", "24", "25", "26").shuffled()),
+        Question("What is 4 × 7?", "28", listOf("27", "28", "29", "30").shuffled()),
+        Question("What is 4 × 8?", "32", listOf("31", "32", "33", "34").shuffled()),
+        Question("What is 4 × 9?", "36", listOf("35", "36", "37", "38").shuffled()),
+        Question("What is 4 × 10?", "40", listOf("39", "40", "41", "42").shuffled()),
+        Question("What is 4 × 11?", "44", listOf("43", "44", "45", "46").shuffled()),
+        Question("What is 4 × 12?", "48", listOf("47", "48", "49", "50").shuffled()),
+        Question("What is 5 × 5?", "25", listOf("24", "25", "26", "27").shuffled()),
+        Question("What is 5 × 6?", "30", listOf("29", "30", "31", "32").shuffled()),
+        Question("What is 5 × 7?", "35", listOf("34", "35", "36", "37").shuffled()),
+        Question("What is 5 × 8?", "40", listOf("39", "40", "41", "42").shuffled()),
+        Question("What is 5 × 9?", "45", listOf("44", "45", "46", "47").shuffled()),
+        Question("What is 5 × 10?", "50", listOf("49", "50", "51", "52").shuffled()),
+        Question("What is 5 × 11?", "55", listOf("54", "55", "56", "57").shuffled()),
+        Question("What is 5 × 12?", "60", listOf("59", "60", "61", "62").shuffled()),
+        Question("What is 6 × 6?", "36", listOf("35", "36", "37", "38").shuffled()),
+        Question("What is 6 × 7?", "42", listOf("41", "42", "43", "44").shuffled()),
+        Question("What is 6 × 8?", "48", listOf("47", "48", "49", "50").shuffled()),
+        Question("What is 6 × 9?", "54", listOf("53", "54", "55", "56").shuffled()),
+        Question("What is 6 × 10?", "60", listOf("59", "60", "61", "62").shuffled()),
+        Question("What is 6 × 11?", "66", listOf("65", "66", "67", "68").shuffled()),
+        Question("What is 6 × 12?", "72", listOf("71", "72", "73", "74").shuffled()),
+        Question("What is 7 × 7?", "49", listOf("48", "49", "50", "51").shuffled()),
+        Question("What is 7 × 8?", "56", listOf("55", "56", "57", "58").shuffled()),
+        Question("What is 7 × 9?", "63", listOf("62", "63", "64", "65").shuffled()),
+        Question("What is 7 × 10?", "70", listOf("69", "70", "71", "72").shuffled()),
+        Question("What is 7 × 11?", "77", listOf("76", "77", "78", "79").shuffled()),
+        Question("What is 7 × 12?", "84", listOf("83", "84", "85", "86").shuffled()),
+        Question("What is 8 × 8?", "64", listOf("63", "64", "65", "66").shuffled()),
+        Question("What is 8 × 9?", "72", listOf("71", "72", "73", "74").shuffled()),
+        Question("What is 8 × 10?", "80", listOf("79", "80", "81", "82").shuffled()),
+        Question("What is 8 × 11?", "88", listOf("87", "88", "89", "90").shuffled()),
+        Question("What is 8 × 12?", "96", listOf("95", "96", "97", "98").shuffled()),
+        Question("What is 9 × 9?", "81", listOf("80", "81", "82", "83").shuffled()),
+        Question("What is 9 × 10?", "90", listOf("89", "90", "91", "92").shuffled()),
+        Question("What is 9 × 11?", "99", listOf("98", "99", "100", "101").shuffled()),
+        Question("What is 9 × 12?", "108", listOf("107", "108", "109", "110").shuffled()),
+        Question("What is 10 × 10?", "100", listOf("99", "100", "101", "102").shuffled()),
+        Question("What is 10 × 11?", "110", listOf("109", "110", "111", "112").shuffled()),
+        Question("What is 10 × 12?", "120", listOf("119", "120", "121", "122").shuffled()),
+        Question("What is 11 × 11?", "121", listOf("120", "121", "122", "123").shuffled()),
+        Question("What is 11 × 12?", "132", listOf("131", "132", "133", "134").shuffled()),
+        Question("What is 12 × 12?", "144", listOf("143", "144", "145", "146").shuffled())
+    )
 
-    // Generate division questions (Dividends up to 100, divisors 1-10, clean division)
-    private fun generateDivisionQuestions(count: Int): List<Question> {
-        return (1..count).map {
-            val divisor = (1..10).random()
-            val quotient = (1..10).random()
-            val dividend = divisor * quotient // Ensures a clean division
-            Question("What is $dividend ÷ $divisor?",
-                correctAnswer = quotient.toString(), listOf(quotient, quotient - 1, quotient + 1, quotient + 2).map { it.toString() }.shuffled()
-            )
-        }
-    }
+    val divisionQuestions = listOf(
+        Question("What is 12 ÷ 3?", "4", listOf("3", "4", "5", "6").shuffled()),
+        Question("What is 15 ÷ 5?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 18 ÷ 2?", "9", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 20 ÷ 4?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 24 ÷ 6?", "4", listOf("3", "4", "5", "6").shuffled()),
+        Question("What is 16 ÷ 4?", "4", listOf("3", "4", "5", "6").shuffled()),
+        Question("What is 21 ÷ 7?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 22 ÷ 2?", "11", listOf("10", "11", "12", "13").shuffled()),
+        Question("What is 14 ÷ 7?", "2", listOf("1", "2", "3", "4").shuffled()),
+        Question("What is 25 ÷ 5?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 24 ÷ 8?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 20 ÷ 5?", "4", listOf("3", "4", "5", "6").shuffled()),
+        Question("What is 22 ÷ 11?", "2", listOf("1", "2", "3", "4").shuffled()),
+        Question("What is 18 ÷ 6?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 21 ÷ 3?", "7", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 16 ÷ 8?", "2", listOf("1", "2", "3", "4").shuffled()),
+        Question("What is 19 ÷ 3?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 12 ÷ 4?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 15 ÷ 3?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 18 ÷ 3?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 24 ÷ 3?", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 20 ÷ 2?", "10", listOf("9", "10", "11", "12").shuffled()),
+        Question("What is 25 ÷ 5?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 30 ÷ 6?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 28 ÷ 7?", "4", listOf("3", "4", "5", "6").shuffled()),
+        Question("What is 27 ÷ 9?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 22 ÷ 2?", "11", listOf("10", "11", "12", "13").shuffled()),
+        Question("What is 36 ÷ 6?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 24 ÷ 4?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 18 ÷ 3?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 16 ÷ 2?", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 30 ÷ 5?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 40 ÷ 8?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 12 ÷ 6?", "2", listOf("1", "2", "3", "4").shuffled()),
+        Question("What is 27 ÷ 3?", "9", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 15 ÷ 3?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 18 ÷ 9?", "2", listOf("1", "2", "3", "4").shuffled()),
+        Question("What is 32 ÷ 4?", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 48 ÷ 6?", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 35 ÷ 7?", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("What is 54 ÷ 9?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 45 ÷ 5?", "9", listOf("8", "9", "10", "11").shuffled()),
+        Question("What is 24 ÷ 3?", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("What is 30 ÷ 3?", "10", listOf("9", "10", "11", "12").shuffled()),
+        Question("What is 28 ÷ 4?", "7", listOf("6", "7", "8", "9").shuffled()),
+        Question("What is 33 ÷ 11?", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("What is 42 ÷ 7?", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("What is 50 ÷ 5?", "10", listOf("9", "10", "11", "12").shuffled())
+    )
 
-    // Store questions separately
-    private val additionQuestions = generateAdditionQuestions(50)
-    private val subtractionQuestions = generateSubtractionQuestions(50)
-    private val multiplicationQuestions = generateMultiplicationQuestions(50)
-    private val divisionQuestions = generateDivisionQuestions(50)
+    val fractionAdditionQuestions = listOf(
+        Question("What is 1/4 + 1/2?", "3/4", listOf("1/2", "3/4", "5/4", "7/4").shuffled()),
+        Question("What is 1/3 + 1/6?", "1/2", listOf("1/3", "1/2", "2/3", "5/6").shuffled()),
+        Question("What is 2/5 + 3/5?", "5/5", listOf("4/5", "5/5", "6/5", "7/5").shuffled()),
+        Question("What is 1/8 + 1/4?", "3/8", listOf("1/2", "3/8", "5/8", "7/8").shuffled()),
+        Question("What is 2/3 + 3/4?", "17/12", listOf("15/12", "17/12", "14/12", "19/12").shuffled()),
+        Question("What is 1/5 + 3/10?", "1/2", listOf("1/4", "1/2", "3/4", "5/6").shuffled()),
+        Question("What is 3/7 + 1/2?", "17/14", listOf("16/14", "17/14", "18/14", "15/14").shuffled()),
+        Question("What is 5/12 + 7/12?", "12/12", listOf("11/12", "12/12", "13/12", "14/12").shuffled()),
+        Question("What is 3/8 + 5/16?", "11/16", listOf("10/16", "11/16", "12/16", "13/16").shuffled()),
+        Question("What is 4/9 + 2/3?", "10/9", listOf("9/9", "10/9", "11/9", "12/9").shuffled()),
+        Question("What is 3/5 + 2/10?", "7/10", listOf("6/10", "7/10", "8/10", "9/10").shuffled()),
+        Question("What is 1/6 + 2/3?", "5/6", listOf("4/6", "5/6", "6/6", "7/6").shuffled()),
+        Question("What is 2/7 + 4/21?", "10/21", listOf("9/21", "10/21", "11/21", "12/21").shuffled()),
+        Question("What is 3/8 + 1/4?", "5/8", listOf("4/8", "5/8", "6/8", "7/8").shuffled()),
+        Question("What is 5/12 + 1/3?", "9/12", listOf("8/12", "9/12", "10/12", "11/12").shuffled()),
+        Question("What is 7/10 + 3/5?", "13/10", listOf("12/10", "13/10", "14/10", "15/10").shuffled()),
+        Question("What is 3/4 + 2/5?", "23/20", listOf("22/20", "23/20", "24/20", "25/20").shuffled()),
+        Question("What is 1/3 + 2/9?", "5/9", listOf("4/9", "5/9", "6/9", "7/9").shuffled()),
+        Question("What is 2/7 + 3/14?", "5/14", listOf("4/14", "5/14", "6/14", "7/14").shuffled()),
+        Question("What is 1/10 + 1/5?", "3/10", listOf("2/10", "3/10", "4/10", "5/10").shuffled()),
+        Question("What is 3/6 + 1/3?", "1", listOf("1/2", "1", "1/3", "1/4").shuffled()),
+        Question("What is 4/9 + 2/9?", "6/9", listOf("5/9", "6/9", "7/9", "8/9").shuffled()),
+        Question("What is 2/5 + 1/10?", "3/10", listOf("2/10", "3/10", "4/10", "5/10").shuffled()),
+        Question("What is 7/8 + 1/2?", "11/8", listOf("10/8", "11/8", "12/8", "13/8").shuffled()),
+        Question("What is 1/4 + 3/8?", "5/8", listOf("4/8", "5/8", "6/8", "7/8").shuffled()),
+        Question("What is 5/6 + 1/3?", "7/6", listOf("6/6", "7/6", "8/6", "9/6").shuffled()),
+        Question("What is 2/3 + 4/9?", "10/9", listOf("9/9", "10/9", "11/9", "12/9").shuffled()),
+        Question("What is 3/10 + 1/2?", "8/10", listOf("7/10", "8/10", "9/10", "10/10").shuffled()),
+        Question("What is 1/5 + 4/25?", "9/25", listOf("8/25", "9/25", "10/25", "11/25").shuffled()),
+        Question("What is 3/4 + 1/8?", "7/8", listOf("6/8", "7/8", "8/8", "9/8").shuffled()),
+        Question("What is 1/7 + 5/14?", "9/14", listOf("8/14", "9/14", "10/14", "11/14").shuffled()),
+        Question("What is 2/3 + 5/12?", "13/12", listOf("12/12", "13/12", "14/12", "15/12").shuffled()),
+        Question("What is 1/2 + 3/8?", "7/8", listOf("6/8", "7/8", "8/8", "9/8").shuffled()),
+        Question("What is 5/12 + 1/4?", "11/12", listOf("10/12", "11/12", "12/12", "13/12").shuffled()),
+        Question("What is 3/7 + 2/5?", "31/35", listOf("30/35", "31/35", "32/35", "33/35").shuffled()),
+        Question("What is 4/9 + 2/7?", "34/63", listOf("33/63", "34/63", "35/63", "36/63").shuffled()),
+        Question("What is 1/6 + 5/9?", "19/18", listOf("18/18", "19/18", "20/18", "21/18").shuffled()),
+        Question("What is 2/3 + 3/5?", "19/15", listOf("18/15", "19/15", "20/15", "21/15").shuffled()),
+        Question("What is 1/8 + 3/4?", "7/8", listOf("6/8", "7/8", "8/8", "9/8").shuffled()),
+        Question("What is 5/12 + 1/6?", "7/12", listOf("6/12", "7/12", "8/12", "9/12").shuffled()),
+        Question("What is 1/5 + 2/3?", "13/15", listOf("12/15", "13/15", "14/15", "15/15").shuffled()),
+        Question("What is 7/8 + 5/16?", "19/16", listOf("18/16", "19/16", "20/16", "21/16").shuffled()),
+        Question("What is 3/5 + 1/10?", "7/10", listOf("6/10", "7/10", "8/10", "9/10").shuffled()),
+        Question("What is 2/3 + 7/9?", "13/9", listOf("12/9", "13/9", "14/9", "15/9").shuffled()),
+        Question("What is 4/7 + 1/3?", "19/21", listOf("18/21", "19/21", "20/21", "21/21").shuffled()),
+        Question("What is 1/2 + 5/8?", "9/8", listOf("8/8", "9/8", "10/8", "11/8").shuffled()),
+        Question("What is 3/10 + 1/2?", "8/10", listOf("7/10", "8/10", "9/10", "10/10").shuffled())
+    )
 
-    private val fractionsQuestions = listOf(
-        Question("What is 1/2 + 1/4?", "3/4", listOf("1/2", "3/4", "2/3", "5/4"))
-    ) + (1..40).map {
-        val num1 = (1..10).random()
-        val denom1 = (2..10).random()
-        val num2 = (1..10).random()
-        val denom2 = (2..10).random()
-        val answer = "${num1 + num2}/${denom1 + denom2}"
-        Question("What is $num1/$denom1 + $num2/$denom2?", answer, listOf("$num1/$denom1", answer, "$num2/$denom2", "${num1 - num2}/${denom1 - denom2}"))
-    }
+    val fractionSubtractionQuestions = listOf(
+        Question("What is 3/4 - 1/2?", "1/4", listOf("1/4", "1/2", "3/4", "5/4").shuffled()),
+        Question("What is 5/6 - 1/3?", "1/2", listOf("1/3", "1/2", "2/3", "3/4").shuffled()),
+        Question("What is 7/10 - 3/5?", "1/10", listOf("1/10", "1/5", "1/2", "1/3").shuffled()),
+        Question("What is 5/12 - 1/4?", "1/3", listOf("1/4", "1/3", "1/2", "5/12").shuffled()),
+        Question("What is 3/5 - 2/7?", "11/35", listOf("10/35", "11/35", "12/35", "13/35").shuffled()),
+        Question("What is 4/9 - 2/3?", "2/9", listOf("2/9", "1/3", "3/9", "4/9").shuffled()),
+        Question("What is 7/8 - 1/4?", "5/8", listOf("5/8", "4/8", "3/8", "2/8").shuffled()),
+        Question("What is 2/3 - 1/6?", "1/2", listOf("1/2", "1/3", "1/4", "1/6").shuffled()),
+        Question("What is 3/4 - 1/2?", "1/4", listOf("1/4", "1/3", "1/2", "2/4").shuffled()),
+        Question("What is 5/8 - 3/16?", "7/16", listOf("6/16", "7/16", "8/16", "9/16").shuffled()),
+        Question("What is 9/10 - 2/5?", "1/2", listOf("1/3", "1/2", "2/3", "3/4").shuffled()),
+        Question("What is 3/7 - 2/5?", "7/35", listOf("6/35", "7/35", "8/35", "9/35").shuffled()),
+        Question("What is 5/6 - 1/3?", "1/2", listOf("1/2", "1/3", "1/4", "2/3").shuffled()),
+        Question("What is 7/12 - 1/4?", "5/12", listOf("5/12", "6/12", "7/12", "8/12").shuffled()),
+        Question("What is 3/5 - 1/10?", "1/2", listOf("1/5", "1/2", "2/5", "3/5").shuffled()),
+        Question("What is 2/3 - 1/4?", "5/12", listOf("5/12", "6/12", "7/12", "8/12").shuffled()),
+        Question("What is 3/4 - 1/3?", "5/12", listOf("4/12", "5/12", "6/12", "7/12").shuffled()),
+        Question("What is 5/8 - 1/4?", "3/8", listOf("2/8", "3/8", "4/8", "5/8").shuffled()),
+        Question("What is 7/10 - 1/2?", "1/5", listOf("1/4", "1/5", "1/6", "1/2").shuffled()),
+        Question("What is 5/9 - 2/3?", "1/9", listOf("1/9", "2/9", "3/9", "4/9").shuffled()),
+        Question("What is 3/8 - 1/4?", "1/8", listOf("1/8", "1/6", "1/2", "2/8").shuffled()),
+        Question("What is 5/6 - 1/4?", "7/12", listOf("6/12", "7/12", "8/12", "9/12").shuffled()),
+        Question("What is 2/5 - 1/10?", "3/10", listOf("2/10", "3/10", "4/10", "5/10").shuffled()),
+        Question("What is 3/7 - 1/2?", "13/14", listOf("12/14", "13/14", "14/14", "15/14").shuffled()),
+        Question("What is 5/12 - 1/6?", "1/4", listOf("1/3", "1/4", "2/4", "3/4").shuffled()),
+        Question("What is 7/8 - 1/2?", "3/8", listOf("3/8", "4/8", "5/8", "6/8").shuffled()),
+        Question("What is 2/3 - 1/6?", "1/2", listOf("1/2", "1/3", "1/4", "1/6").shuffled()),
+        Question("What is 9/10 - 1/5?", "7/10", listOf("6/10", "7/10", "8/10", "9/10").shuffled()),
+        Question("What is 4/9 - 2/7?", "22/63", listOf("21/63", "22/63", "23/63", "24/63").shuffled()),
+        Question("What is 5/8 - 3/8?", "2/8", listOf("1/8", "2/8", "3/8", "4/8").shuffled()),
+        Question("What is 3/7 - 1/5?", "8/35", listOf("7/35", "8/35", "9/35", "10/35").shuffled()),
+        Question("What is 2/3 - 1/3?", "1/3", listOf("1/2", "1/3", "2/3", "3/3").shuffled()),
+        Question("What is 7/10 - 3/5?", "1/2", listOf("1/3", "1/2", "2/3", "3/4").shuffled()),
+        Question("What is 5/12 - 1/8?", "7/24", listOf("6/24", "7/24", "8/24", "9/24").shuffled()),
+        Question("What is 2/7 - 1/3?", "5/21", listOf("4/21", "5/21", "6/21", "7/21").shuffled()),
+        Question("What is 9/10 - 3/5?", "3/10", listOf("2/10", "3/10", "4/10", "5/10").shuffled()),
+        Question("What is 1/2 - 1/3?", "1/6", listOf("1/6", "1/5", "1/4", "1/3").shuffled()),
+        Question("What is 5/6 - 1/4?", "7/12", listOf("6/12", "7/12", "8/12", "9/12").shuffled()),
+        Question("What is 1/2 - 1/8?", "3/8", listOf("2/8", "3/8", "4/8", "5/8").shuffled()),
+        Question("What is 3/4 - 1/5?", "11/20", listOf("10/20", "11/20", "12/20", "13/20").shuffled()),
+        Question("What is 7/10 - 2/5?", "1/2", listOf("1/3", "1/2", "2/3", "3/4").shuffled()),
+        Question("What is 5/9 - 2/3?", "1/9", listOf("1/8", "1/9", "1/10", "2/9").shuffled()),
+        Question("What is 3/8 - 1/3?", "5/24", listOf("4/24", "5/24", "6/24", "7/24").shuffled()),
+        Question("What is 9/10 - 1/4?", "17/20", listOf("16/20", "17/20", "18/20", "19/20").shuffled()),
+        Question("What is 2/7 - 1/3?", "5/21", listOf("4/21", "5/21", "6/21", "7/21").shuffled()),
+        Question("What is 3/5 - 1/10?", "1/2", listOf("1/3", "1/2", "2/3", "1/4").shuffled())
+    )
 
-    private val geometryQuestions = listOf(
-        Question("What is the area of a square with side 4?", "16", listOf("8", "12", "16", "20"))
-    ) + (1..40).map {
-        val side = (2..15).random()
-        val area = side * side
-        Question("What is the area of a square with side $side?", area.toString(), listOf((area - 2).toString(), (area + 2).toString(), area.toString(), (area + 4).toString()))
-    }
+    val fractionMultiplicationQuestions = listOf(
+        Question("What is 3/4 × 1/2?", "3/8", listOf("3/8", "1/4", "5/8", "7/8").shuffled()),
+        Question("What is 5/6 × 2/3?", "5/9", listOf("4/9", "5/9", "6/9", "7/9").shuffled()),
+        Question("What is 7/10 × 3/5?", "21/50", listOf("21/50", "15/50", "28/50", "30/50").shuffled()),
+        Question("What is 3/8 × 1/4?", "3/32", listOf("3/32", "2/32", "4/32", "5/32").shuffled()),
+        Question("What is 2/5 × 3/7?", "6/35", listOf("5/35", "6/35", "7/35", "8/35").shuffled()),
+        Question("What is 5/9 × 4/3?", "20/27", listOf("18/27", "20/27", "21/27", "22/27").shuffled()),
+        Question("What is 7/12 × 1/3?", "7/36", listOf("5/36", "6/36", "7/36", "8/36").shuffled()),
+        Question("What is 1/2 × 3/5?", "3/10", listOf("2/10", "3/10", "4/10", "5/10").shuffled()),
+        Question("What is 9/10 × 1/4?", "9/40", listOf("8/40", "9/40", "10/40", "11/40").shuffled()),
+        Question("What is 2/3 × 4/5?", "8/15", listOf("7/15", "8/15", "9/15", "10/15").shuffled()),
+        Question("What is 5/6 × 1/2?", "5/12", listOf("4/12", "5/12", "6/12", "7/12").shuffled()),
+        Question("What is 3/7 × 2/9?", "6/63", listOf("5/63", "6/63", "7/63", "8/63").shuffled()),
+        Question("What is 8/9 × 3/4?", "24/36", listOf("23/36", "24/36", "25/36", "26/36").shuffled()),
+        Question("What is 5/8 × 1/3?", "5/24", listOf("4/24", "5/24", "6/24", "7/24").shuffled()),
+        Question("What is 7/10 × 2/5?", "14/50", listOf("13/50", "14/50", "15/50", "16/50").shuffled()),
+        Question("What is 4/7 × 1/6?", "4/42", listOf("3/42", "4/42", "5/42", "6/42").shuffled()),
+        Question("What is 3/4 × 2/3?", "6/12", listOf("5/12", "6/12", "7/12", "8/12").shuffled()),
+        Question("What is 2/5 × 7/8?", "14/40", listOf("13/40", "14/40", "15/40", "16/40").shuffled()),
+        Question("What is 5/12 × 3/4?", "15/48", listOf("14/48", "15/48", "16/48", "17/48").shuffled()),
+        Question("What is 2/7 × 5/6?", "10/42", listOf("9/42", "10/42", "11/42", "12/42").shuffled()),
+        Question("What is 4/9 × 2/5?", "8/45", listOf("7/45", "8/45", "9/45", "10/45").shuffled()),
+        Question("What is 1/3 × 7/8?", "7/24", listOf("6/24", "7/24", "8/24", "9/24").shuffled()),
+        Question("What is 3/8 × 2/7?", "6/56", listOf("5/56", "6/56", "7/56", "8/56").shuffled()),
+        Question("What is 7/10 × 4/9?", "28/90", listOf("27/90", "28/90", "29/90", "30/90").shuffled()),
+        Question("What is 1/2 × 1/2?", "1/4", listOf("1/3", "1/4", "1/5", "1/6").shuffled()),
+        Question("What is 3/5 × 2/3?", "6/15", listOf("5/15", "6/15", "7/15", "8/15").shuffled()),
+        Question("What is 2/3 × 5/6?", "10/18", listOf("9/18", "10/18", "11/18", "12/18").shuffled()),
+        Question("What is 7/12 × 1/4?", "7/48", listOf("6/48", "7/48", "8/48", "9/48").shuffled()),
+        Question("What is 5/8 × 3/4?", "15/32", listOf("14/32", "15/32", "16/32", "17/32").shuffled()),
+        Question("What is 6/7 × 5/6?", "30/42", listOf("29/42", "30/42", "31/42", "32/42").shuffled()),
+        Question("What is 9/10 × 3/8?", "27/80", listOf("26/80", "27/80", "28/80", "29/80").shuffled()),
+        Question("What is 1/5 × 4/9?", "4/45", listOf("3/45", "4/45", "5/45", "6/45").shuffled()),
+        Question("What is 5/6 × 2/3?", "10/18", listOf("9/18", "10/18", "11/18", "12/18").shuffled()),
+        Question("What is 3/4 × 1/5?", "3/20", listOf("2/20", "3/20", "4/20", "5/20").shuffled()),
+        Question("What is 2/3 × 4/9?", "8/27", listOf("7/27", "8/27", "9/27", "10/27").shuffled()),
+        Question("What is 4/7 × 3/5?", "12/35", listOf("11/35", "12/35", "13/35", "14/35").shuffled()),
+        Question("What is 1/6 × 2/5?", "2/30", listOf("1/30", "2/30", "3/30", "4/30").shuffled()),
+        Question("What is 3/8 × 2/3?", "6/24", listOf("5/24", "6/24", "7/24", "8/24").shuffled()),
+        Question("What is 7/10 × 4/5?", "28/50", listOf("27/50", "28/50", "29/50", "30/50").shuffled()),
+        Question("What is 2/9 × 5/7?", "10/63", listOf("9/63", "10/63", "11/63", "12/63").shuffled()),
+        Question("What is 3/4 × 2/7?", "6/28", listOf("5/28", "6/28", "7/28", "8/28").shuffled()),
+        Question("What is 6/5 × 4/9?", "24/45", listOf("23/45", "24/45", "25/45", "26/45").shuffled()),
+        Question("What is 5/6 × 1/3?", "5/18", listOf("4/18", "5/18", "6/18", "7/18").shuffled()),
+        Question("What is 2/7 × 3/5?", "6/35", listOf("5/35", "6/35", "7/35", "8/35").shuffled()),
+        Question("What is 5/9 × 2/3?", "10/27", listOf("9/27", "10/27", "11/27", "12/27").shuffled()),
+        Question("What is 3/5 × 4/7?", "12/35", listOf("11/35", "12/35", "13/35", "14/35").shuffled())
+    )
 
-    private val complexDivisionQuestions = listOf(
-        Question("What is 128 ÷ 4?", "32", listOf("30", "31", "32", "33"))
-    ) + (1..40).map {
-        val num1 = (100..1000).random()
-        val num2 = (2..20).random()
-        val answer = num1 / num2
-        Question("What is $num1 ÷ $num2?", answer.toString(), listOf((answer - 1).toString(), answer.toString(), (answer + 1).toString(), (answer + 2).toString()))
-    }
+    val fractionDivisionQuestions = listOf(
+        Question("What is 3/4 ÷ 1/2?", "3/2", listOf("2/3", "3/2", "1/2", "5/4").shuffled()),
+        Question("What is 5/6 ÷ 2/3?", "5/4", listOf("2/3", "5/4", "3/5", "4/7").shuffled()),
+        Question("What is 7/10 ÷ 3/5?", "7/6", listOf("7/6", "6/7", "3/5", "10/21").shuffled()),
+        Question("What is 3/8 ÷ 1/4?", "3/2", listOf("3/2", "2/3", "4/6", "5/4").shuffled()),
+        Question("What is 2/5 ÷ 3/7?", "14/15", listOf("10/15", "14/15", "9/10", "12/17").shuffled()),
+        Question("What is 5/9 ÷ 4/3?", "5/12", listOf("5/12", "3/4", "4/9", "7/10").shuffled()),
+        Question("What is 7/12 ÷ 1/3?", "7/4", listOf("5/4", "7/4", "6/5", "9/6").shuffled()),
+        Question("What is 1/2 ÷ 3/5?", "5/6", listOf("2/3", "5/6", "3/5", "4/7").shuffled()),
+        Question("What is 9/10 ÷ 1/4?", "9/2", listOf("9/2", "10/3", "7/4", "5/6").shuffled()),
+        Question("What is 2/3 ÷ 4/5?", "5/6", listOf("5/6", "4/7", "7/9", "3/5").shuffled()),
+        Question("What is 5/6 ÷ 1/2?", "5/3", listOf("5/3", "3/5", "6/5", "7/4").shuffled()),
+        Question("What is 3/7 ÷ 2/9?", "27/14", listOf("27/14", "14/27", "21/12", "12/17").shuffled()),
+        Question("What is 8/9 ÷ 3/4?", "32/27", listOf("32/27", "27/32", "3/4", "8/11").shuffled()),
+        Question("What is 5/8 ÷ 1/3?", "15/8", listOf("15/8", "5/6", "7/9", "3/2").shuffled()),
+        Question("What is 7/10 ÷ 2/5?", "7/4", listOf("7/4", "4/7", "3/5", "9/6").shuffled()),
+        Question("What is 4/7 ÷ 1/6?", "24/7", listOf("24/7", "7/24", "3/2", "5/8").shuffled()),
+        Question("What is 3/4 ÷ 2/3?", "9/8", listOf("9/8", "8/9", "7/6", "5/4").shuffled()),
+        Question("What is 2/5 ÷ 7/8?", "16/35", listOf("16/35", "35/16", "4/7", "7/9").shuffled()),
+        Question("What is 5/12 ÷ 3/4?", "5/9", listOf("5/9", "9/5", "4/7", "3/8").shuffled()),
+        Question("What is 2/7 ÷ 5/6?", "12/35", listOf("12/35", "35/12", "4/9", "7/8").shuffled()),
+        Question("What is 4/9 ÷ 2/5?", "10/9", listOf("10/9", "9/10", "5/4", "6/7").shuffled()),
+        Question("What is 1/3 ÷ 7/8?", "8/21", listOf("8/21", "21/8", "3/5", "5/7").shuffled()),
+        Question("What is 3/8 ÷ 2/7?", "21/16", listOf("21/16", "16/21", "4/9", "5/8").shuffled()),
+        Question("What is 7/10 ÷ 4/9?", "63/40", listOf("63/40", "40/63", "9/14", "6/11").shuffled()),
+        Question("What is 1/2 ÷ 1/2?", "1", listOf("1", "2", "1/2", "3/2").shuffled()),
+        Question("What is 3/5 ÷ 2/3?", "9/10", listOf("9/10", "10/9", "7/8", "4/5").shuffled()),
+        Question("What is 2/3 ÷ 5/6?", "4/5", listOf("4/5", "5/4", "3/7", "7/9").shuffled()),
+        Question("What is 7/12 ÷ 1/4?", "7/3", listOf("7/3", "3/7", "2/5", "9/4").shuffled()),
+        Question("What is 5/8 ÷ 3/4?", "10/12", listOf("10/12", "5/6", "4/7", "7/9").shuffled()),
+        Question("What is 6/7 ÷ 5/6?", "36/35", listOf("36/35", "35/36", "5/7", "7/8").shuffled()),
+        Question("What is 9/10 ÷ 3/8?", "24/10", listOf("24/10", "10/24", "5/6", "7/9").shuffled()),
+        Question("What is 1/5 ÷ 4/9?", "9/20", listOf("9/20", "20/9", "3/7", "5/8").shuffled()),
+        Question("What is 5/6 ÷ 2/3?", "5/4", listOf("5/4", "4/5", "3/5", "7/9").shuffled()),
+        Question("What is 3/4 ÷ 1/5?", "15/4", listOf("15/4", "4/15", "7/8", "5/6").shuffled()),
+        Question("What is 2/3 ÷ 4/9?", "3/2", listOf("3/2", "2/3", "5/7", "7/9").shuffled())
+    )
 
-    private val complexMultiplicationQuestions = listOf(
-        Question("What is 12 x 13?", "156", listOf("144", "150", "156", "160"))
-    ) + (1..40).map {
-        val num1 = (10..50).random()
-        val num2 = (10..50).random()
-        val answer = num1 * num2
-        Question("What is $num1 x $num2?", answer.toString(), listOf((answer - 10).toString(), (answer + 10).toString(), answer.toString(), (answer + 20).toString()))
-    }
+    val complexDivisionQuestions = listOf(
+        Question("What is 234 ÷ 6?", "39", listOf("39", "38", "40", "41").shuffled()),
+        Question("What is 435 ÷ 5?", "87", listOf("87", "86", "88", "89").shuffled()),
+        Question("What is 528 ÷ 8?", "66", listOf("66", "65", "67", "68").shuffled()),
+        Question("What is 672 ÷ 7?", "96", listOf("96", "95", "97", "98").shuffled()),
+        Question("What is 819 ÷ 9?", "91", listOf("91", "90", "92", "93").shuffled()),
+        Question("What is 945 ÷ 5?", "189", listOf("189", "188", "190", "191").shuffled()),
+        Question("What is 864 ÷ 9?", "96", listOf("96", "95", "97", "98").shuffled()),
+        Question("What is 729 ÷ 3?", "243", listOf("243", "242", "244", "245").shuffled()),
+        Question("What is 555 ÷ 5?", "111", listOf("111", "110", "112", "113").shuffled()),
+        Question("What is 888 ÷ 4?", "222", listOf("222", "221", "223", "224").shuffled()),
+        Question("What is 999 ÷ 3?", "333", listOf("333", "332", "334", "335").shuffled()),
+        Question("What is 756 ÷ 6?", "126", listOf("126", "125", "127", "128").shuffled()),
+        Question("What is 432 ÷ 4?", "108", listOf("108", "107", "109", "110").shuffled()),
+        Question("What is 315 ÷ 9?", "35", listOf("35", "34", "36", "37").shuffled()),
+        Question("What is 684 ÷ 6?", "114", listOf("114", "113", "115", "116").shuffled()),
+        Question("What is 918 ÷ 2?", "459", listOf("459", "458", "460", "461").shuffled()),
+        Question("What is 840 ÷ 7?", "120", listOf("120", "119", "121", "122").shuffled()),
+        Question("What is 675 ÷ 5?", "135", listOf("135", "134", "136", "137").shuffled()),
+        Question("What is 999 ÷ 9?", "111", listOf("111", "110", "112", "113").shuffled()),
+        Question("What is 588 ÷ 7?", "84", listOf("84", "83", "85", "86").shuffled()),
+        Question("What is 432 ÷ 3?", "144", listOf("144", "143", "145", "146").shuffled()),
+        Question("What is 810 ÷ 9?", "90", listOf("90", "89", "91", "92").shuffled()),
+        Question("What is 684 ÷ 4?", "171", listOf("171", "170", "172", "173").shuffled()),
+        Question("What is 252 ÷ 6?", "42", listOf("42", "41", "43", "44").shuffled()),
+        Question("What is 729 ÷ 9?", "81", listOf("81", "80", "82", "83").shuffled()),
+        Question("What is 315 ÷ 7?", "45", listOf("45", "44", "46", "47").shuffled()),
+        Question("What is 864 ÷ 6?", "144", listOf("144", "143", "145", "146").shuffled()),
+        Question("What is 495 ÷ 5?", "99", listOf("99", "98", "100", "101").shuffled()),
+        Question("What is 924 ÷ 3?", "308", listOf("308", "307", "309", "310").shuffled()),
+        Question("What is 784 ÷ 7?", "112", listOf("112", "111", "113", "114").shuffled()),
+        Question("What is 576 ÷ 6?", "96", listOf("96", "95", "97", "98").shuffled()),
+        Question("What is 693 ÷ 3?", "231", listOf("231", "230", "232", "233").shuffled()),
+        Question("What is 825 ÷ 5?", "165", listOf("165", "164", "166", "167").shuffled()),
+        Question("What is 936 ÷ 4?", "234", listOf("234", "233", "235", "236").shuffled()),
+        Question("What is 369 ÷ 3?", "123", listOf("123", "122", "124", "125").shuffled()),
+        Question("What is 812 ÷ 4?", "203", listOf("203", "202", "204", "205").shuffled()),
+        Question("What is 972 ÷ 6?", "162", listOf("162", "161", "163", "164").shuffled()),
+        Question("What is 455 ÷ 5?", "91", listOf("91", "90", "92", "93").shuffled()),
+        Question("What is 621 ÷ 3?", "207", listOf("207", "206", "208", "209").shuffled()),
+        Question("What is 756 ÷ 9?", "84", listOf("84", "83", "85", "86").shuffled()),
+        Question("What is 984 ÷ 4?", "246", listOf("246", "245", "247", "248").shuffled()),
+        Question("What is 525 ÷ 7?", "75", listOf("75", "74", "76", "77").shuffled()),
+        Question("What is 999 ÷ 7?", "142", listOf("142", "141", "143", "144").shuffled()),
+        Question("What is 888 ÷ 6?", "148", listOf("148", "147", "149", "150").shuffled()),
+        Question("What is 315 ÷ 5?", "63", listOf("63", "62", "64", "65").shuffled()),
+        Question("What is 444 ÷ 4?", "111", listOf("111", "110", "112", "113").shuffled()),
+        Question("What is 936 ÷ 9?", "104", listOf("104", "103", "105", "106").shuffled()),
+        Question("What is 729 ÷ 7?", "104", listOf("104", "103", "105", "106").shuffled())
+    )
 
-    private val preAlgebraQuestions = listOf(
-        Question("Solve for x: 2x + 3 = 7", "2", listOf("1", "2", "3", "4"))
-    ) + (1..40).map {
-        val x = (1..20).random()
-        val multiplier = (2..5).random()
-        val constant = (1..10).random()
-        val equation = ""+multiplier + "x + " + constant + " = " + (multiplier * x + constant)
-        Question("Solve for x: $equation", x.toString(), listOf((x - 1).toString(), x.toString(), (x + 1).toString(), (x + 2).toString()))
-    }
+    val complexMultiplicationQuestions = listOf(
+        Question("What is 23 × 45?", "1035", listOf("1035", "1020", "1040", "1055").shuffled()),
+        Question("What is 56 × 78?", "4368", listOf("4368", "4350", "4380", "4400").shuffled()),
+        Question("What is 91 × 34?", "3094", listOf("3094", "3080", "3100", "3120").shuffled()),
+        Question("What is 67 × 89?", "5963", listOf("5963", "5940", "5980", "6000").shuffled()),
+        Question("What is 42 × 123?", "5166", listOf("5166", "5150", "5180", "5200").shuffled()),
+        Question("What is 77 × 88?", "6776", listOf("6776", "6750", "6800", "6820").shuffled()),
+        Question("What is 93 × 47?", "4371", listOf("4371", "4350", "4400", "4425").shuffled()),
+        Question("What is 58 × 96?", "5568", listOf("5568", "5550", "5600", "5625").shuffled()),
+        Question("What is 36 × 129?", "4644", listOf("4644", "4600", "4700", "4725").shuffled()),
+        Question("What is 81 × 57?", "4617", listOf("4617", "4600", "4650", "4675").shuffled()),
+        Question("What is 65 × 72?", "4680", listOf("4680", "4650", "4700", "4750").shuffled()),
+        Question("What is 49 × 93?", "4557", listOf("4557", "4500", "4600", "4650").shuffled()),
+        Question("What is 27 × 189?", "5103", listOf("5103", "5000", "5150", "5200").shuffled()),
+        Question("What is 88 × 99?", "8712", listOf("8712", "8700", "8750", "8800").shuffled()),
+        Question("What is 73 × 84?", "6132", listOf("6132", "6100", "6200", "6250").shuffled()),
+        Question("What is 32 × 145?", "4640", listOf("4640", "4600", "4700", "4750").shuffled()),
+        Question("What is 92 × 58?", "5336", listOf("5336", "5300", "5400", "5450").shuffled()),
+        Question("What is 79 × 68?", "5372", listOf("5372", "5350", "5400", "5450").shuffled()),
+        Question("What is 25 × 198?", "4950", listOf("4950", "4900", "5000", "5050").shuffled()),
+        Question("What is 41 × 87?", "3567", listOf("3567", "3500", "3600", "3650").shuffled()),
+        Question("What is 53 × 94?", "4982", listOf("4982", "4950", "5000", "5050").shuffled()),
+        Question("What is 67 × 76?", "5092", listOf("5092", "5050", "5100", "5150").shuffled()),
+        Question("What is 99 × 45?", "4455", listOf("4455", "4400", "4500", "4550").shuffled()),
+        Question("What is 31 × 159?", "4929", listOf("4929", "4900", "4950", "5000").shuffled()),
+        Question("What is 78 × 85?", "6630", listOf("6630", "6600", "6700", "6750").shuffled()),
+        Question("What is 62 × 74?", "4588", listOf("4588", "4550", "4600", "4650").shuffled()),
+        Question("What is 90 × 99?", "8910", listOf("8910", "8900", "8950", "9000").shuffled()),
+        Question("What is 47 × 83?", "3901", listOf("3901", "3850", "3950", "4000").shuffled()),
+        Question("What is 69 × 92?", "6348", listOf("6348", "6300", "6400", "6450").shuffled()),
+        Question("What is 44 × 123?", "5412", listOf("5412", "5400", "5450", "5500").shuffled()),
+        Question("What is 57 × 91?", "5187", listOf("5187", "5150", "5200", "5250").shuffled()),
+        Question("What is 98 × 87?", "8526", listOf("8526", "8500", "8600", "8650").shuffled()),
+        Question("What is 50 × 129?", "6450", listOf("6450", "6400", "6500", "6550").shuffled()),
+        Question("What is 83 × 71?", "5893", listOf("5893", "5850", "5900", "5950").shuffled()),
+        Question("What is 39 × 178?", "6942", listOf("6942", "6900", "7000", "7050").shuffled()),
+        Question("What is 64 × 76?", "4864", listOf("4864", "4850", "4900", "4950").shuffled()),
+        Question("What is 21 × 198?", "4158", listOf("4158", "4100", "4200", "4250").shuffled()),
+        Question("What is 88 × 123?", "10824", listOf("10824", "10800", "10900", "11000").shuffled()),
+        Question("What is 77 × 82?", "6314", listOf("6314", "6300", "6350", "6400").shuffled()),
+        Question("What is 93 × 65?", "6045", listOf("6045", "6000", "6100", "6150").shuffled()),
+        Question("What is 74 × 79?", "5846", listOf("5846", "5800", "5900", "5950").shuffled()),
+        Question("What is 85 × 98?", "8330", listOf("8330", "8300", "8400", "8450").shuffled()),
+        Question("What is 37 × 156?", "5772", listOf("5772", "5700", "5800", "5850").shuffled()),
+        Question("What is 66 × 94?", "6204", listOf("6204", "6150", "6250", "6300").shuffled()),
+        Question("What is 29 × 187?", "5423", listOf("5423", "5400", "5450", "5500").shuffled()),
+        Question("What is 58 × 123?", "7134", listOf("7134", "7100", "7200", "7250").shuffled()),
+        Question("What is 99 × 111?", "10989", listOf("10989", "10900", "11000", "11100").shuffled())
+    )
 
-    fun getQuestionsForTopic(topic: String): List<Question> {
+    val preAlgebraQuestions = listOf(
+        Question("Solve for x: 3x + 5 = 14", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("Solve for x: 2x - 7 = 9", "8", listOf("6", "7", "8", "9").shuffled()),
+        Question("Solve for x: 5x = 40", "8", listOf("6", "7", "8", "9").shuffled()),
+        Question("Solve for x: x/4 = 3", "12", listOf("10", "11", "12", "13").shuffled()),
+        Question("Solve for x: 7x + 2 = 30", "4", listOf("2", "3", "4", "5").shuffled()),
+        Question("Solve for x: 4x - 3 = 21", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("Solve for x: x + 9 = 15", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("Solve for x: 6x = 54", "9", listOf("8", "9", "10", "11").shuffled()),
+        Question("Solve for x: 2x + 4 = 18", "7", listOf("6", "7", "8", "9").shuffled()),
+        Question("Solve for x: x/5 = 7", "35", listOf("32", "33", "34", "35").shuffled()),
+        Question("Solve for x: 10x - 5 = 25", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("Solve for x: 8x + 4 = 68", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("Solve for x: x/2 + 3 = 10", "14", listOf("12", "13", "14", "15").shuffled()),
+        Question("Solve for x: 9x = 81", "9", listOf("7", "8", "9", "10").shuffled()),
+        Question("Solve for x: 3x - 4 = 5", "3", listOf("2", "3", "4", "5").shuffled()),
+        Question("Solve for x: 5x + 10 = 35", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("Solve for x: x/6 = 4", "24", listOf("20", "22", "24", "26").shuffled()),
+        Question("Solve for x: 7x - 2 = 48", "7", listOf("6", "7", "8", "9").shuffled()),
+        Question("Solve for x: 4x + 6 = 26", "5", listOf("3", "4", "5", "6").shuffled()),
+        Question("Solve for x: x - 8 = 12", "20", listOf("18", "19", "20", "21").shuffled()),
+        Question("Solve for x: 2x + 5 = 17", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("Solve for x: 11x = 99", "9", listOf("7", "8", "9", "10").shuffled()),
+        Question("Solve for x: x/3 + 2 = 9", "21", listOf("18", "19", "20", "21").shuffled()),
+        Question("Solve for x: 5x = 60", "12", listOf("10", "11", "12", "13").shuffled()),
+        Question("Solve for x: 6x - 7 = 41", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("Solve for x: x/4 = 6", "24", listOf("22", "23", "24", "25").shuffled()),
+        Question("Solve for x: 9x + 3 = 75", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("Solve for x: 3x - 5 = 10", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("Solve for x: 12x = 144", "12", listOf("10", "11", "12", "13").shuffled()),
+        Question("Solve for x: 8x - 4 = 60", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("Solve for x: x/7 + 5 = 9", "28", listOf("24", "26", "28", "30").shuffled()),
+        Question("Solve for x: 10x + 3 = 53", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("Solve for x: 4x - 6 = 26", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("Solve for x: 6x + 2 = 38", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("Solve for x: x/8 = 9", "72", listOf("64", "70", "72", "75").shuffled()),
+        Question("Solve for x: 5x + 7 = 32", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("Solve for x: 9x - 4 = 77", "9", listOf("4", "9", "2", "11").shuffled()),
+        Question("Solve for x: 7x + 5 = 61", "8", listOf("7", "8", "9", "10").shuffled()),
+        Question("Solve for x: x - 6 = 18", "24", listOf("22", "23", "24", "25").shuffled()),
+        Question("Solve for x: 4x/2 = 10", "5", listOf("3", "4", "5", "6").shuffled()),
+        Question("Solve for x: 6x + 3 = 45", "7", listOf("6", "7", "8", "9").shuffled()),
+        Question("Solve for x: x/9 = 5", "45", listOf("49", "33", "45", "48").shuffled()),
+        Question("Solve for x: 8x - 4 = 44", "6", listOf("5", "6", "7", "8").shuffled()),
+        Question("Solve for x: 11x + 2 = 79", "7", listOf("6", "7", "8", "9").shuffled()),
+        Question("Solve for x: x/5 + 7 = 12", "25", listOf("22", "24", "25", "27").shuffled()),
+        Question("Solve for x: 3x - 9 = 6", "5", listOf("4", "5", "6", "7").shuffled()),
+        Question("Solve for x: 7x + 8 = 43", "5", listOf("4", "5", "6", "7").shuffled())
+    )
+
+
+        fun getQuestionsForTopic(topic: String): List<Question> {
         return when (topic) {
             "Addition" -> additionQuestions
             "Subtraction" -> subtractionQuestions
             "Multiplication" -> multiplicationQuestions
             "Division" -> divisionQuestions
-            "Fractions" -> fractionsQuestions
-            "Geometry" -> geometryQuestions
+            "Fraction Addition" -> fractionAdditionQuestions
+            "Fraction Subtraction" -> fractionSubtractionQuestions
+            "Fraction Multiplication" -> fractionMultiplicationQuestions
+            "Fraction Division" -> fractionDivisionQuestions
             "Complex Division" -> complexDivisionQuestions
             "Complex Multiplication" -> complexMultiplicationQuestions
             "Pre Algebra" -> preAlgebraQuestions
