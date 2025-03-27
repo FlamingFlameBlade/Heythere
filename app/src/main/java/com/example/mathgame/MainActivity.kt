@@ -139,7 +139,7 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
 @Composable
 fun MainMenuScreen(
     onNavigate: (String) -> Unit,
-    onAchievements: () -> Unit, // New parameter for Achievements navigation
+    onAchievements: () -> Unit,
     progressState: Map<String, Float>,
     levelState: Map<String, Int>
 ) {
@@ -436,11 +436,11 @@ fun LevelIndicator(level: Int) {
 @Composable
 fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
     val achievements = listOf(
-        Achievement(10, "Beginner", "Answer 10 questions correctly"),
+        Achievement(10, "Novice", "Answer 10 questions correctly"),
         Achievement(50, "Apprentice", "Answer 50 questions correctly"),
-        Achievement(100, "Scholar", "Answer 100 questions correctly"),
+        Achievement(100, "Adventurer", "Answer 100 questions correctly"),
         Achievement(250, "Expert", "Answer 250 questions correctly"),
-        Achievement(500, "Master", "Answer 500 questions correctly")
+        Achievement(500, "Hero", "Answer 500 questions correctly")
     )
     TextButton(onClick = onBack) {
         Text(text = "Back", color = Color.Gray, modifier = Modifier.padding(top = 32.dp))
@@ -494,11 +494,11 @@ fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int) {
     val unlocked = totalCorrectAnswers >= achievement.milestone
     val backgroundColor =
         if (unlocked)
-            if (achievement.title == "Beginner")
+            if (achievement.title == "Novice")
                 Bronze
             else if (achievement.title == "Apprentice")
                 Silver
-            else if (achievement.title == "Scholar")
+            else if (achievement.title == "Adventurer")
                 Gold
             else if (achievement.title == "Expert")
                 Ruby
