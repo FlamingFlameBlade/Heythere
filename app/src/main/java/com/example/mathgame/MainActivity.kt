@@ -28,6 +28,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -158,7 +160,18 @@ fun MainMenuScreen(
     onAchievements: () -> Unit,
     progressState: Map<String, Float>,
     levelState: Map<String, Int>
-) {
+)
+{Box(modifier = Modifier
+    .fillMaxSize()
+    .background(BackgroundGaps)){}
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawBrickPattern(
+            brickColor = BrickBackground,
+            brickWidth = 500f,
+            brickHeight = 500f,
+            gap = 20f
+        )
+    }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -167,10 +180,13 @@ fun MainMenuScreen(
         item {
             Text(
                 text = "Choose a Math Topic",
-                fontSize = 24.sp,
+                fontSize = 50.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 16.dp, top = 48.dp)
+                color = Gold,
+                fontFamily = FontFamily(
+                    Font(R.font.enchantedland)
+                ),
+                modifier = Modifier.padding(bottom = 16.dp, top = 60.dp)
             )
         }
 
@@ -347,7 +363,17 @@ fun MathQuestionScreen(
         isAnsweringEnabled = false
         nextQuestion()
     }
-
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(BackgroundGaps)){}
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawBrickPattern(
+            brickColor = BrickBackground,
+            brickWidth = 500f,
+            brickHeight = 500f,
+            gap = 20f
+        )
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -433,7 +459,7 @@ fun LevelIndicator(level: Int) {
     )
 
     val color by animateColorAsState(
-        targetValue = if (isLevelUp) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary, // Gold color on level-up
+        targetValue = if (isLevelUp) Color(0xFFFFD700) else Ivory, // Gold color on level-up
         animationSpec = tween(durationMillis = 800) // Same duration as scale animation
     )
 
@@ -458,6 +484,17 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit,username: St
         Achievement(250, "Expert", "Answer 250 questions correctly"),
         Achievement(500, "Hero", "Answer 500 questions correctly")
     )
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(BackgroundGaps)){}
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawBrickPattern(
+            brickColor = BrickBackground,
+            brickWidth = 500f,
+            brickHeight = 500f,
+            gap = 20f
+        )
+    }
     TextButton(onClick = onBack) {
         Text(text = "Back", color = Color.Gray, modifier = Modifier.padding(top = 32.dp))
     }
@@ -508,6 +545,9 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit,username: St
 @Composable
 fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int, username: String) {
     val unlocked = totalCorrectAnswers >= achievement.milestone
+    val English = FontFamily(
+        Font(R.font.enchantedland) // Reference the font here
+    )
     val backgroundColor =
         if (unlocked)
             if (achievement.title == "Novice")
@@ -536,13 +576,13 @@ fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int, username
         ) {
             Row (
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    ){
-                Text(
-                    text = if (unlocked) "🏆" else "🔒",
-                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .fillMaxWidth()
+                        ){
+                    Text(
+                        text = if (unlocked) "🏆" else "🔒",
+                        fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (unlocked) Color.Black else Color.DarkGray,
 
@@ -557,6 +597,7 @@ fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int, username
                     text = if (unlocked) username else "",
                     fontSize = 160 / username.length * 1.sp,
                     fontWeight = FontWeight.Bold,
+                    fontFamily = English,
                     color = if (unlocked) Color.Black else Color.DarkGray
                 )
             }
@@ -600,16 +641,24 @@ fun NameScreen(onContinue: () -> Unit,sharedPreferences: SharedPreferences){
     }
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
 
         ) {
-        Text(text = "Welcome to Math Quest!",
-            fontSize = 30.sp,
+        Text(text = "Welcome to YOUR Math Quest!",
+            fontSize = 80.sp,
+            lineHeight = 60.sp,
+            fontFamily = FontFamily(
+                Font(R.font.enchantedland) // Reference the font here
+            ),
+            textAlign = TextAlign.Center,
+            color = Ruby,
+
             modifier = Modifier
-                .padding(top = 50.dp)
+                .padding(top = 80.dp)
                 .padding(bottom = 200.dp)
+                .fillMaxWidth()
         )
         Text(text = "Enter your name, adventurer:")
 
