@@ -1,7 +1,7 @@
 # Math Quest
 
 ## Description
-Math Game allows the user to test their skills in different areas of math and level up through correct answers.​
+Math Quest is a castle themed game that allows the user to test their skills in different areas of math and level up through correct answers.​ It can help improve mental math which can be beneficial in timed tests.
 
 ## Features
 - Experience system that increases are correct answers are chosen
