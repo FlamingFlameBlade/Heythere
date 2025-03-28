@@ -11,9 +11,10 @@ Math Game allows the user to test their skills in different areas of math and le
 Install Android Studios (https://developer.android.com/studio) and Git (https://git-scm.com/downloads)
 and complete the following:
 ```
-1. Open Android Studios.
-2. Click get from VCS.
-3. Paste the URL of the repository.
-4. Click Clone.
+1. Install Android Studios
+2. Open Android Studios.
+3. Click get from VCS.
+4. Paste the URL of the repository.
+5. Click Clone.
 ```
   
