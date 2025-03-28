@@ -12,6 +12,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,11 +26,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
+import com.example.mathgame.ui.theme.BackgroundGaps
+import com.example.mathgame.ui.theme.BrickBackground
 import com.example.mathgame.ui.theme.Bronze
 import com.example.mathgame.ui.theme.Gold
 import com.example.mathgame.ui.theme.Iron
@@ -44,13 +50,14 @@ import com.example.mathgame.ui.theme.Steel
 import com.example.mathgame.ui.theme.Yellow
 import kotlin.random.Random
 
+
 //FlamingFlameBlade
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val sharedPreferences = getSharedPreferences("math_progress", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("math_progress", MODE_PRIVATE)
 
         enableEdgeToEdge()
         setContent {
@@ -68,7 +75,12 @@ val topics = listOf("Addition", "Subtraction","Multiplication","Division", "Frac
 
 @Composable
 fun MathLearningApp(sharedPreferences: SharedPreferences) {
-    var currentScreen by remember { mutableStateOf("menu") }
+
+    val FirstLaunch = if (remember { sharedPreferences.getString("username", "") } == "") "name"
+        else "menu"
+
+
+    var currentScreen by remember { mutableStateOf(FirstLaunch) }
     var currentTopic by remember { mutableStateOf("Basic Math") }
 
     // Initialize states for all topics
@@ -78,6 +90,7 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
     // Track total correct answers
     var totalCorrectAnswers by rememberSaveable { mutableStateOf(getTotalCorrectAnswers(sharedPreferences)) }
 
+
     // Load initial values for all topics
     LaunchedEffect(Unit) {
         topics.forEach { topic ->
@@ -86,6 +99,7 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
         }
     }
 //FlamingFlameBlade
+    val username:String = remember { sharedPreferences.getString("username", "")!! }
     when (currentScreen) {
         "menu" -> MainMenuScreen(
             onNavigate = { topic ->
@@ -130,7 +144,9 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
                 progressState[currentTopic] =  if (newProgress <= -0.2f) 0f else newProgress
             }
         )
-        "achievements" -> AchievementsScreen(totalCorrectAnswers, {currentScreen = "menu"})
+
+        "achievements" -> AchievementsScreen(totalCorrectAnswers, {currentScreen = "menu"},username = username)
+        "name" -> NameScreen(onContinue = {currentScreen = "menu"},sharedPreferences = sharedPreferences)
     }
 }
 
@@ -434,7 +450,7 @@ fun LevelIndicator(level: Int) {
     )
 }
 @Composable
-fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
+fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit,username: String) {
     val achievements = listOf(
         Achievement(10, "Novice", "Answer 10 questions correctly"),
         Achievement(50, "Apprentice", "Answer 50 questions correctly"),
@@ -480,7 +496,7 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     rowAchievements.forEach { achievement ->
-                        AchievementTile(achievement, totalCorrectAnswers)
+                        AchievementTile(achievement, totalCorrectAnswers,username = username)
                     }
                 }
             }
@@ -490,7 +506,7 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit) {
 
 // Achievement data class
 @Composable
-fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int) {
+fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int, username: String) {
     val unlocked = totalCorrectAnswers >= achievement.milestone
     val backgroundColor =
         if (unlocked)
@@ -517,14 +533,33 @@ fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int) {
                 .size(100.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(backgroundColor),
-            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = if (unlocked) "🏆" else "🔒",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (unlocked) Color.Black else Color.DarkGray
-            )
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    ){
+                Text(
+                    text = if (unlocked) "🏆" else "🔒",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (unlocked) Color.Black else Color.DarkGray,
+
+                )
+            }
+            Row (horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                .fillMaxWidth()
+                    .padding(top = 40.dp))
+            {
+                Text(
+                    text = if (unlocked) username else "",
+                    fontSize = 160 / username.length * 1.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (unlocked) Color.Black else Color.DarkGray
+                )
+            }
         }
 
         // Title
@@ -548,6 +583,112 @@ fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int) {
     }
 }
 
+@Composable
+fun NameScreen(onContinue: () -> Unit,sharedPreferences: SharedPreferences){
+    var username by remember { mutableStateOf("") } // Holds user input
+    var errorMessage by remember { mutableStateOf("Get Typing!") } // Holds validation message
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(BackgroundGaps)){}
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawBrickPattern(
+            brickColor = BrickBackground,
+            brickWidth = 500f,
+            brickHeight = 500f,
+            gap = 20f
+        )
+    }
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+
+        ) {
+        Text(text = "Welcome to Math Quest!",
+            fontSize = 30.sp,
+            modifier = Modifier
+                .padding(top = 50.dp)
+                .padding(bottom = 200.dp)
+        )
+        Text(text = "Enter your name, adventurer:")
+
+        TextField(
+            value = username,
+            onValueChange = {
+                username = it
+
+                // Validation: Ensure length is between 4 and 20
+                errorMessage = when {
+                    it.length < 4 -> "Username must be at least 4 characters"
+                    it.length > 18 -> "Username cannot be longer than 18 characters"
+                    it.contains (" ") -> "Username cannot contain spaces"
+                    else -> "" // No error
+                }
+            },
+            isError = errorMessage.isNotEmpty(),
+            singleLine = true,
+            modifier = Modifier.padding(bottom = 50.dp)
+        )
+
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp
+            )
+        }
+        else {
+            Button(
+                onClick = {
+                    sharedPreferences.edit().putString("username", username).apply()
+                    onContinue()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Gold
+                )
+
+
+            ) { Text(text = "I'm Ready") }
+        }
+
+
+
+    }
+}
+
+fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBrickPattern(
+    brickColor: Color,
+    brickWidth: Float,
+    brickHeight: Float,
+    gap: Float
+) {
+    // Calculate effective brick size with gap
+    val totalBrickWidth = brickWidth + gap
+    val totalBrickHeight = brickHeight + gap
+
+    // Calculate the number of rows and columns required
+    val rowCount = (size.height / totalBrickHeight).toInt() + 1
+    val columnCount = (size.width / totalBrickWidth).toInt() + 2
+
+    for (row in 0 until rowCount) {
+        val yOffset = row * totalBrickHeight
+        val isOffsetRow = row % 2 != 0 // Alternate row alignment
+
+        for (column in 0 until columnCount) {
+            val xOffset = column * totalBrickWidth
+
+            // Add an offset for alternating rows
+            val adjustedXOffset = if (isOffsetRow) xOffset - (brickWidth / 2) else xOffset
+
+            drawRect(
+                color = brickColor,
+                topLeft = Offset(adjustedXOffset, yOffset),
+                size = androidx.compose.ui.geometry.Size(brickWidth, brickHeight)
+            )
+        }
+    }
+}
 
 fun saveProgress(sharedPreferences: SharedPreferences, topic: String, progress: Float) {
     sharedPreferences.edit().putFloat("progress_$topic", progress).apply()

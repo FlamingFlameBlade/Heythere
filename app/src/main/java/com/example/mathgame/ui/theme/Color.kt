@@ -17,6 +17,8 @@ val Yellow = Color(0xFFFFD700)
 val Ruby = Color(0xFF9b111e)
 val LightGray = Color(0xFFD3D3D3)
 val LightBlue = Color(0xFF00FFFF)
+val BackgroundGaps = Color(0xFF666060)
+val BrickBackground = Color(0xFF4D5052)
 
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
