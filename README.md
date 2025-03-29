@@ -17,6 +17,7 @@ and complete the following:
 4. Click Clone.
 ```
 ## Acknowledgments
+### Jetpack Compose
 This project makes use of Jetpack Compose under the Apache License, Version 2.0.
 
 Jetpack Compose: https://developer.android.com/jetpack/compose
@@ -25,6 +26,19 @@ Copyright © 2025 The Android Open Source Project.
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at:
 
     http://www.apache.org/licenses/LICENSE-2.0
+### Android X
+This app uses AndroidX libraries, which are part of the Android framework and are licensed under the Apache License, Version 2.0.
+
+Copyright © 2025 The Android Open Source Project.
+
+For more information, visit: http://www.apache.org/licenses/LICENSE-2.0
+### ChatGPT
+This app was developed with assistance from ChatGPT, an AI language model created by OpenAI.  
+For more information about ChatGPT, visit: https://openai.com
+### GitHub
+This project is hosted on GitHub. You can find the repository at:  
+https://github.com/FlamingFlameBlade/Math-Game
+
 ## License
 © 2025 Alex Sun and Aidan Ly. All rights reserved.  
 This app and its code may not be copied, modified, or distributed without explicit permission from the author.
