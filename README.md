@@ -16,4 +16,9 @@ and complete the following:
 3. Paste the URL of the repository.
 4. Click Clone.
 ```
-  
+## Acknowledgments
+This app includes the following third-party libraries:
+- Jetpack Compose (Apache 2.0)
+## License
+© 2025 Alex Sun and Aidan Ly. All rights reserved.  
+This app and its code may not be copied, modified, or distributed without explicit permission from the author.
