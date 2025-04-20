@@ -1,10 +1,16 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.mathgame
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,30 +21,60 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import androidx.core.content.FileProvider
 import com.example.mathgame.ui.theme.BackgroundGaps
 import com.example.mathgame.ui.theme.BrickBackground
 import com.example.mathgame.ui.theme.Bronze
+import com.example.mathgame.ui.theme.Emerald
 import com.example.mathgame.ui.theme.Gold
 import com.example.mathgame.ui.theme.Iron
 import com.example.mathgame.ui.theme.Ivory
@@ -50,6 +86,9 @@ import com.example.mathgame.ui.theme.Ruby
 import com.example.mathgame.ui.theme.Silver
 import com.example.mathgame.ui.theme.Steel
 import com.example.mathgame.ui.theme.Yellow
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import kotlin.random.Random
 
 
@@ -90,7 +129,8 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
     val levelState = remember { mutableStateMapOf<String, Int>() }
 
     // Track total correct answers
-    var totalCorrectAnswers by rememberSaveable { mutableStateOf(getTotalCorrectAnswers(sharedPreferences)) }
+    var totalCorrectAnswers by rememberSaveable { mutableIntStateOf(getTotalCorrectAnswers(sharedPreferences)) }
+    var streak by rememberSaveable { mutableIntStateOf(getStreak(sharedPreferences))}
 
 
     // Load initial values for all topics
@@ -118,7 +158,9 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
             level = levelState[currentTopic] ?: 1,
             onCorrectAnswer = {
                 totalCorrectAnswers += 1
-                saveTotalCorrectAnswers(sharedPreferences, totalCorrectAnswers) // Save the updated count
+                saveTotalCorrectAnswers(sharedPreferences, totalCorrectAnswers)
+                streak += 1
+                saveStreak(sharedPreferences,streak)// Save the updated count
 
                 val level = levelState[currentTopic] ?: 1
                 val multiplier = 1f / level
@@ -144,10 +186,12 @@ fun MathLearningApp(sharedPreferences: SharedPreferences) {
                 val newProgress = (progressState[currentTopic] ?: 0f) - 0.2f
                 saveProgress(sharedPreferences, currentTopic, if (newProgress <= -0.2f) 0f else newProgress)
                 progressState[currentTopic] =  if (newProgress <= -0.2f) 0f else newProgress
+                streak = 0
+                saveStreak(sharedPreferences,streak)
             }
         )
 
-        "achievements" -> AchievementsScreen(totalCorrectAnswers, {currentScreen = "menu"},username = username)
+        "achievements" -> AchievementsScreen(totalCorrectAnswers, {currentScreen = "menu"},username = username,streak = streak)
         "name" -> NameScreen(onContinue = {currentScreen = "menu"},sharedPreferences = sharedPreferences)
     }
 }
@@ -332,7 +376,7 @@ fun MathQuestionScreen(
     }
 
     // Track the random index for question selection
-    var currentQuestionIndex by remember { mutableStateOf(Random.nextInt(questions.size)) }
+    var currentQuestionIndex by remember { mutableIntStateOf(Random.nextInt(questions.size)) }
     val currentQuestion = questions[currentQuestionIndex]
 
     // Update the random index when the user progresses to the next question
@@ -476,13 +520,25 @@ fun LevelIndicator(level: Int) {
     )
 }
 @Composable
-fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit,username: String) {
-    val achievements = listOf(
-        Achievement(10, "Novice", "Answer 10 questions correctly"),
-        Achievement(50, "Apprentice", "Answer 50 questions correctly"),
-        Achievement(100, "Adventurer", "Answer 100 questions correctly"),
-        Achievement(250, "Expert", "Answer 250 questions correctly"),
-        Achievement(500, "Hero", "Answer 500 questions correctly")
+fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit,username: String,streak:Int) {
+    val context = LocalContext.current
+    val view = LocalView.current
+
+    val AnswerAchievements = listOf(
+        Achievement(10, "Novice", "Answer 10 questions correctly",1),
+        Achievement(50, "Apprentice", "Answer 50 questions correctly",2),
+        Achievement(100, "Adventurer", "Answer 100 questions correctly",3),
+        Achievement(250, "Expert", "Answer 250 questions correctly",4),
+        Achievement(500, "Hero", "Answer 500 questions correctly",5),
+        Achievement(1000,"King","Answer 1000 questions correctly",6)
+    )
+
+    val StreakAchievements = listOf(
+        Achievement(5,"Committed","Answer 5 questions correctly in a row",1),
+        Achievement(10,"Dedicated","Answer 10 questions correctly in a row",2),
+        Achievement(25,"Perservering","Answer 25 questions correctly in a row",3),
+        Achievement(20,"Unyielding","Answer 20 questions correctly in a row",4),
+        Achievement(50,"Perfectionist","Answer 50 questions correctly in a row",5)
     )
     Box(modifier = Modifier
         .fillMaxSize()
@@ -498,7 +554,7 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit,username: St
     TextButton(onClick = onBack) {
         Text(text = "Back", color = Color.Gray, modifier = Modifier.padding(top = 32.dp))
     }
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(30.dp),
@@ -506,60 +562,106 @@ fun AchievementsScreen(totalCorrectAnswers: Int, onBack: () -> Unit,username: St
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Title
-        Text(
-            text = "Achievements",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(top = 24.dp)
-        )
+        item {
+            Text(
+                text = "Achievements",
+                fontSize = 50.sp,
+                fontFamily = FontFamily(Font(R.font.enchantedland)),
+                fontWeight = FontWeight.Bold,
+                color = Gold,
+                modifier = Modifier.padding(top = 24.dp)
+            )
+        }
 
-        // Total correct answers
-        Text(
-            text = "Total Correct Answers: $totalCorrectAnswers",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.secondary
-        )
-//FlamingFlameBlade
-        // Achievements Grid
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(achievements.chunked(3)) { rowAchievements ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    rowAchievements.forEach { achievement ->
-                        AchievementTile(achievement, totalCorrectAnswers,username = username)
-                    }
+        // Share button
+        item {
+            Button(onClick = {
+                captureAndShareScreen(view, context)
+            }) {
+                Text(
+                    text = "Show the world your deeds (Share)",
+                    fontFamily = FontFamily(Font(R.font.enchantedland)),
+                    fontSize = 24.sp
+                )
+            }
+        }
+
+        item {
+            Text(
+                text = "Total Correct Answers: $totalCorrectAnswers",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
+            )
+        }
+        // First Achievements Grid
+        items(AnswerAchievements.chunked(3)) { rowAchievements ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                rowAchievements.forEach { achievement ->
+                    AchievementTile(
+                        achievement = achievement,
+                        totalCorrectAnswers = totalCorrectAnswers,
+                        username = username,
+                        type = "Answer",
+                        streak = streak
+                    )
+                }
+            }
+        }
+
+        // Current Streak Text
+        item {
+            Text(
+                text = "Current Streak: $streak",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
+            )
+        }
+
+        // Second Achievements Grid (duplicated content — check if this is intentional)
+        items(StreakAchievements.chunked(3)) { rowAchievements ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                rowAchievements.forEach { achievement ->
+                    AchievementTile(
+                        achievement = achievement,
+                        totalCorrectAnswers = totalCorrectAnswers,
+                        username = username,
+                        type = "Streak",
+                        streak = streak
+                    )
                 }
             }
         }
     }
+
 }
 
-// Achievement data class
+
 @Composable
-fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int, username: String) {
-    val unlocked = totalCorrectAnswers >= achievement.milestone
+fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int, username: String, type: String, streak: Int) {
+    val unlocked = if (type == "Answer") {totalCorrectAnswers >= achievement.milestone}
+        else streak >= achievement.milestone
     val English = FontFamily(
-        Font(R.font.enchantedland) // Reference the font here
+        Font(R.font.enchantedland)
     )
     val backgroundColor =
         if (unlocked)
-            if (achievement.title == "Novice")
-                Bronze
-            else if (achievement.title == "Apprentice")
-                Silver
-            else if (achievement.title == "Adventurer")
-                Gold
-            else if (achievement.title == "Expert")
-                Ruby
-            else
-                LightGray
+            when (achievement.tier) {
+                1 -> Bronze
+                2 -> Silver
+                3 -> Gold
+                4 -> LightBlue
+                5 -> Ruby
+                6 -> Emerald
+                else -> LightGray
+            }
         else
             Color.Gray.copy(alpha = 0.4f)
 //FlamingFlameBlade
@@ -606,18 +708,20 @@ fun AchievementTile(achievement: Achievement, totalCorrectAnswers: Int, username
         // Title
         Text(
             text = achievement.title,
-            fontSize = 16.sp,
+            fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.tertiary,
+            color = backgroundColor,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
+            modifier = Modifier.padding(top = 8.dp),
+            fontFamily = FontFamily(
+                Font(R.font.enchantedland))
         )
 
         // Description
         Text(
             text = achievement.description,
-            fontSize = 12.sp,
-            color = Color.Gray,
+            fontSize = 16.sp,
+            color = Color.Black,
             textAlign = TextAlign.Center,
             lineHeight = 15.sp
         )
@@ -672,6 +776,7 @@ fun NameScreen(onContinue: () -> Unit,sharedPreferences: SharedPreferences){
                     it.length < 4 -> "Username must be at least 4 characters"
                     it.length > 18 -> "Username cannot be longer than 18 characters"
                     it.contains (" ") -> "Username cannot contain spaces"
+                    it.contains ("(") || it.contains(")") || it.contains("!")-> "Username cannot contain symbols"
                     else -> "" // No error
                 }
             },
@@ -739,6 +844,59 @@ fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBrickPattern(
     }
 }
 
+
+fun captureAndShareScreen(view: View, context: Context) {
+    view.isDrawingCacheEnabled = true
+    val bitmap = Bitmap.createBitmap(view.drawingCache)
+    view.isDrawingCacheEnabled = false
+
+    val imageFile = saveBitmapToCache(context, bitmap)
+    if (imageFile != null) {
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", imageFile)
+        shareImage(context, uri)
+    }
+}
+
+private fun saveBitmapToCache(context: Context, bitmap: Bitmap): File? {
+    // Define the directory in the cache folder
+    val cachePath = File(context.cacheDir, "shared_images")
+
+    // Create the directory if it doesn't exist
+    if (!cachePath.exists()) {
+        cachePath.mkdirs()
+    }
+
+    // Define the file to save the image
+    val file = File(cachePath, "shared_screen.png")
+
+    return try {
+        // Save the bitmap as a PNG file
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+        // Return the file if the save was successful
+        file
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null
+    }
+}
+
+private fun shareImage(context: Context, imageUri: Uri) {
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/*"          // Specify that we are sending an image
+        putExtra(Intent.EXTRA_STREAM, imageUri) // Attach the image URI
+
+        // Optionally, add text to accompany the image
+        putExtra(Intent.EXTRA_TEXT, "My Achievements on Math Quest!")
+    }
+
+    // Open the generic share menu where the user can choose an app
+    val chooserIntent = Intent.createChooser(shareIntent, "Share via")
+    context.startActivity(chooserIntent)
+}
+
+
 fun saveProgress(sharedPreferences: SharedPreferences, topic: String, progress: Float) {
     sharedPreferences.edit().putFloat("progress_$topic", progress).apply()
 }
@@ -761,14 +919,27 @@ fun saveTotalCorrectAnswers(sharedPreferences: SharedPreferences, count: Int) {
 fun getTotalCorrectAnswers(sharedPreferences: SharedPreferences): Int {
     return sharedPreferences.getInt("total_correct_answers", 0)
 }
+
+fun saveStreak(sharedPreferences: SharedPreferences, count: Int) {
+    sharedPreferences.edit().putInt("streak",count).apply()
+}
+
+fun getStreak(sharedPreferences: SharedPreferences): Int {
+    return sharedPreferences.getInt("streak", 0)
+}
+
+//Question data class
 data class Question(
     val questionText: String,
     val correctAnswer: String,
     val options: List<String>
 )
+
+// Achievement data class
 data class Achievement(
     val milestone: Int,
     val title: String,
-    val description: String)
+    val description: String,
+    val tier: Int)
 
 
